@@ -47,7 +47,14 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
   - `games`: um por jogo adicionado; `unique (user_id, np_communication_id)`. `np_service_name` (`trophy2` PS5, `trophy` PS4/PS3/Vita) é exigido pela `psn-api` para buscar os troféus. `guia_fonte` só `powerpyx`, `psnprofiles` ou `web`.
   - `trophies`: filha de `games` (apagar o jogo apaga os troféus); `unique (game_id, trophy_id)`. Nome e descrição em PT (`nome`, `descricao`) e EN (`nome_en`, `descricao_en`, para cruzar com o guia). `tipo` em português (`bronze`, `prata`, `ouro`, `platina`). `missable_origem` `auto` ou `manual`. Tem `user_id` próprio para a RLS.
   - `psn_auth`: uma linha por usuário com o refresh token da PSN e a validade. **Só o servidor.**
-- RLS ligada nas 3 e **nenhuma policy nem grant** ainda (tarefa 1.2). O schema novo não recebe permissões automáticas (sem `pg_default_acl` neste projeto) e ainda não está em Exposed schemas.
+- O schema novo não recebe permissões automáticas (sem `pg_default_acl` neste projeto): **tabela nova precisa de grant explícito** (ver 1.2). Ainda não está em Exposed schemas (Data API); fazer quando o app precisar ler (3.1).
+
+## Segurança (tarefa 1.2, 28/10/2026)
+- Migração `20261028020449_platinas_seguranca`. `anon`: nada (nem `usage` no schema). `authenticated`: `usage` + CRUD em `games` e `trophies`, com 4 policies por tabela (ler, criar, alterar, apagar), só do dono (`user_id = (select auth.uid())`). Em `trophies`, criar e alterar também exigem que o jogo seja do usuário. `service_role` (Edge Functions): tudo.
+- `psn_auth`: RLS ligada, **nenhuma policy nem grant** para `anon`/`authenticated`. O Advisor mostra "RLS Enabled No Policy" (INFO) nela: **é de propósito**.
+- Advisor também mostra um WARN em `public.gravar_mercado_pc` (função do Cockpit, chamada pelo `anon` com token): não é deste app, não mexer.
+- Teste: `testes/teste_seguranca.sql` pelo `execute_sql`. Cria 2 usuários numa transação, age como cada um, como visitante e como servidor, e termina com `raise exception` de propósito (tudo desfeito). Esperado: "20 OK, 0 FALHOU". Tabela nova: incluir nas listas.
+- Rodar depois de toda mudança de banco, junto com o Security Advisor (nenhum alerta novo além dos dois acima).
 
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas) e 1.2 (segurança) em 28/10/2026.
