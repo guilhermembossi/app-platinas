@@ -68,5 +68,14 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Dura ~60 dias. **Nunca** ler, imprimir ou registrar o valor (nem em log da função). O MCP não lista secrets: a prova de que está certo é a função da 2.2 responder "autenticado".
 - Secrets são do projeto inteiro (o Cockpit não tem Edge Functions).
 
+## Função de autenticação PSN (tarefa 2.2, 28/10/2026)
+- Código em `supabase/functions/`. Publicar pelo MCP `deploy_edge_function` com os arquivos `psn-auth/index.ts` e `_shared/psn.ts` (entrypoint `psn-auth/index.ts`), `verify_jwt` ligado. Imports `npm:` com versão exata: `psn-api@2.18.1`, `@supabase/supabase-js@2.118.0`.
+- `_shared/psn.ts` → `obterAcessoPsn(admin, userId)`: usa o refresh token de `psn_auth` se faltar mais de 1 dia para vencer; se não houver, vencer ou a PSN recusar, entra pelo `PSN_NPSSO`. Sempre grava o refresh token novo e a validade. Se o NPSSO também falhar: `PsnTokenExpirado` (base da tarefa 5.3). As próximas funções (2.3, 5.x) usam essa mesma função.
+- `psn-auth`: confere o usuário pelo JWT e responde só `{"status":"autenticado","renovar_ate":…}`, `token_expirado` (401), `sem_login` (401) ou `erro` (500). **Nunca tokens, nem no log.**
+- Cliente da função: `service_role` com `db: { schema: 'platinas' }`. Por isso o schema `platinas` está em **Exposed schemas** (Data API), incluído pelo Guilherme no painel. Visitante continua recusado (401, `42501`) nas 3 tabelas pela API.
+- O refresh token da PSN veio com validade de **~10 dias** (não 2 meses): a sync diária (5.2) mantém renovado; se passar disso, a função cai no NPSSO sozinha.
+- Teste: `node testes/teste_psn_auth.mjs` (o Guilherme roda com o e-mail e a senha **do Supabase**, não da PSN). Esperado: HTTP 200 `autenticado` e "Resposta sem tokens: OK".
+- Advisor depois da 2.2: além dos dois avisos já conhecidos, apareceu "Leaked Password Protection Disabled" (recurso do plano Pro; cadastro fechado, só o Guilherme). Aceito igual ao App Treino.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login) e 2.1 (secret do NPSSO) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO) e 2.2 (função psn-auth) em 28/10/2026.
