@@ -87,5 +87,14 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - O mesmo jogo pode existir em PS4 e PS5 (são `np_communication_id` diferentes): a busca mostra os dois com a plataforma.
 - Teste: `node testes/teste_jogo.mjs` (o Guilherme roda: e-mail e senha do Supabase, nome do jogo, número). Conferido com o PS5: Fallout 4 (PS5), 99%, 84 de 85.
 
+## App (tarefa 3.1, 28/10/2026)
+- Mesmo modelo do App Treino: React + Vite + TypeScript, PWA. Versões fixas (`--save-exact`): React 19.3.1, Vite 8.3.5, plugin-react 6.1.2, TypeScript 5.9.3, supabase-js 2.118.0, sharp 0.35.5 (só para os ícones). Node 24 (`.node-version`).
+- **Marca:** `src/config/marca.ts` (nome, descrição, paleta **só escura**, logo de troféu em `logoSvg`). O plugin `marcaNoApp` do `vite.config.ts` põe isso no `index.html` (`%NOME%` etc. e as variáveis CSS) e gera o `manifest.webmanifest`. Ícones em `public/icones/` saem de `npm run icones`. CSS usa só as variáveis (`var(--primaria)`); nenhuma cor fora do `marca.ts`.
+- `BASE` = `/app-platinas/` (GitHub Pages, `https://guilhermembossi.github.io/app-platinas/`); a variável de ambiente `BASE` troca.
+- `src/config/supabase.ts`: URL, chave **publicável** e `ESQUEMA = 'platinas'`. `src/supabase.ts`: cliente (sessão no `localStorage`, renovação automática, `db.schema` platinas) e `mensagemDeErro`.
+- `src/sessao.ts` (`useSessao`): sem sessão → `telas/Acesso.tsx` (só **Entrar**; sem criar conta nem esqueci a senha, porque o cadastro está fechado). Com sessão → `Casca` provisória em `App.tsx` (e-mail + Sair); a lista de jogos entra na 3.2.
+- Ainda sem service worker (abrir sem internet não é requisito da V1).
+- Testar local: `npm run build` e `npx vite preview --port 4173 --host 127.0.0.1 --strictPort` → http://127.0.0.1:4173/app-platinas/. O `preview_start` do navegador interno não achou o `launch.json` desta pasta; rodar o preview em segundo plano e navegar direto.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.**
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.** 3.1 (base PWA) em 28/10/2026.
