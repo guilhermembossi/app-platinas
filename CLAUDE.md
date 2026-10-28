@@ -56,5 +56,12 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Teste: `testes/teste_seguranca.sql` pelo `execute_sql`. Cria 2 usuários numa transação, age como cada um, como visitante e como servidor, e termina com `raise exception` de propósito (tudo desfeito). Esperado: "20 OK, 0 FALHOU". Tabela nova: incluir nas listas.
 - Rodar depois de toda mudança de banco, junto com o Security Advisor (nenhum alerta novo além dos dois acima).
 
+## Login (tarefa 1.3, 28/10/2026)
+- Supabase Auth com e-mail e senha. **Cadastro aberto desligado** ("Allow new users to sign up" off, feito pelo Guilherme no painel): só existe o usuário do Guilherme, criado por ele no painel (Add user, Auto Confirm). Sem anônimo nem outros provedores.
+- O Auth é do projeto inteiro (compartilhado com o Cockpit, que não usa login). Usuário novo só pelo painel.
+- Conferir sem conta: `GET /auth/v1/settings` com a chave publicável (`external.email`, `disable_signup`).
+- Chave **publicável** do projeto: `sb_publishable_JQkktT37DPN-itwjI5DzmQ_0-27422V` (pode ir no app; nunca a `service_role`).
+- Teste: `node testes/teste_login.mjs` (o Guilherme roda; pede e-mail e senha escondida, mostra só "LOGIN OK"/"LOGIN FALHOU", não guarda nada). O Claude não digita a senha.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas) e 1.2 (segurança) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança) e 1.3 (login) em 28/10/2026.
