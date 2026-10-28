@@ -10,6 +10,7 @@ import {
   getUserTrophiesEarnedForTitle,
   type TrophyTitle,
 } from 'npm:psn-api@2.18.1';
+import { cabecalhosCors } from '../_shared/cors.ts';
 import { obterAcessoPsn, PsnTokenExpirado } from '../_shared/psn.ts';
 
 type Acesso = { accessToken: string };
@@ -139,7 +140,15 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
   });
 }
 
+// Toda resposta leva os cabeçalhos de CORS (o app chama do navegador, tarefa 3.3).
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cabecalhosCors(req) });
+  const resp = await atender(req);
+  for (const [k, v] of Object.entries(cabecalhosCors(req))) resp.headers.set(k, v);
+  return resp;
+});
+
+async function atender(req: Request): Promise<Response> {
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     db: { schema: 'platinas' },
     auth: { persistSession: false },
@@ -169,4 +178,4 @@ Deno.serve(async (req) => {
     console.error('psn-jogos: erro interno', e instanceof Error && e.message.startsWith('falha') ? e.message : '');
     return resposta({ status: 'erro' }, 500);
   }
-});
+}

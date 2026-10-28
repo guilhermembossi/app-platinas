@@ -102,5 +102,12 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Navegação pelo `#` em `App.tsx` (`Casca`): `#/adicionar` mostra só um aviso até a 3.3. O logo no topo volta para o início.
 - Ícones dos jogos vêm direto do servidor de imagens da PSN (`icone_url`).
 
+## Busca e adicionar na tela (tarefa 3.3, 28/10/2026)
+- `telas/Adicionar.tsx` (`#/adicionar`): campo + Buscar ("Buscando…"), resultados com ícone, plataforma, %, botão Adicionar ("Adicionando…", trava os outros) ou "Já adicionado". Ao adicionar volta para `#/` (o Início recarrega a lista).
+- `dados/psn.ts`: `buscarJogos`, `adicionarJogo` (via `supabase.functions.invoke('psn-jogos')`) e `mensagemPsn` (status da função → português; `token_expirado` já tem texto, a tela própria é a 5.3).
+- **CORS:** `_shared/cors.ts` aceita só `https://guilhermembossi.github.io`, `http://127.0.0.1:4173` e `:5173`. `psn-jogos` responde o `OPTIONS` e põe os cabeçalhos em toda resposta (a lógica fica em `atender`). Endereço novo do app = incluir aqui e publicar de novo as funções. Publicar `psn-jogos` agora leva 3 arquivos: `psn-jogos/index.ts`, `_shared/psn.ts`, `_shared/cors.ts`.
+- Conferido: Kingdom Two Crowns (PS4, `trophy`) adicionado pela tela, 47 troféus. PS4 e PS5 funcionam.
+- Depois de publicar uma versão nova no PC, o navegador pode guardar a antiga: Ctrl+F5.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.** 3.1 (base PWA) e 3.2 (tela inicial) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.** 3.1 (base PWA), 3.2 (tela inicial) e 3.3 (busca e adicionar) em 28/10/2026.

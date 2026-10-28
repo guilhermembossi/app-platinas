@@ -92,6 +92,26 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .barra-progresso { height: 8px; border-radius: 4px; background: var(--borda); overflow: hidden; }
 .barra-progresso > div { height: 100%; border-radius: 4px; background: var(--primaria); }
 
+/* Adicionar jogo */
+.busca { display: flex; gap: 0.5rem; }
+.busca input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px; /* evita o zoom automático do iPhone */
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+.busca input:focus { outline: 2px solid var(--primaria); outline-offset: 0; border-color: transparent; }
+.dica-busca { font-size: 0.8rem; margin: 0.5rem 0 1rem; }
+.lista-jogos .botao-pequeno { flex: none; }
+.mensagem.erro + .lista-jogos, .busca + .mensagem { margin-top: 0.75rem; }
+.mensagem { margin-bottom: 0.75rem; }
+
 .rodape { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 2rem; font-size: 0.85rem; }
 
 .carregando { min-height: 100dvh; display: grid; place-items: center; }
