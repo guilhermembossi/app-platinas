@@ -63,5 +63,10 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Chave **publicável** do projeto: `sb_publishable_JQkktT37DPN-itwjI5DzmQ_0-27422V` (pode ir no app; nunca a `service_role`).
 - Teste: `node testes/teste_login.mjs` (o Guilherme roda; pede e-mail e senha escondida, mostra só "LOGIN OK"/"LOGIN FALHOU", não guarda nada). O Claude não digita a senha.
 
+## Token da PSN (tarefa 2.1, 28/10/2026)
+- Secret `PSN_NPSSO` no Supabase (Edge Functions → Secrets), salvo pelo Guilherme no painel. Pegar de novo: logar em www.playstation.com e abrir `https://ca.account.sony.com/api/v1/ssocookie` (o valor de `npsso`, 64 caracteres). Não sair da conta no site depois (invalida o código).
+- Dura ~60 dias. **Nunca** ler, imprimir ou registrar o valor (nem em log da função). O MCP não lista secrets: a prova de que está certo é a função da 2.2 responder "autenticado".
+- Secrets são do projeto inteiro (o Cockpit não tem Edge Functions).
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança) e 1.3 (login) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login) e 2.1 (secret do NPSSO) em 28/10/2026.
