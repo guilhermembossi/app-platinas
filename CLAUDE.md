@@ -96,5 +96,11 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Ainda sem service worker (abrir sem internet não é requisito da V1).
 - Testar local: `npm run build` e `npx vite preview --port 4173 --host 127.0.0.1 --strictPort` → http://127.0.0.1:4173/app-platinas/. O `preview_start` do navegador interno não achou o `launch.json` desta pasta; rodar o preview em segundo plano e navegar direto.
 
+## Tela inicial (tarefa 3.2, 28/10/2026)
+- `telas/Inicio.tsx` ("Meus jogos"): um cartão por jogo (ícone da PSN, nome, %, barra, "PS5 · sincronizado hoje às 00:19"), botão "+ Adicionar jogo" (`#/adicionar`), estado vazio e de erro com "Tentar de novo". E-mail e Sair no rodapé. 100% deixa o número na cor primária.
+- `dados/jogos.ts`: `useJogos()` lê `games` direto do Supabase (a RLS filtra pelo usuário), ordem de `adicionado_em`; `quando(iso)` = "hoje/ontem às HH:MM" ou "DD/MM às HH:MM" (horário do aparelho).
+- Navegação pelo `#` em `App.tsx` (`Casca`): `#/adicionar` mostra só um aviso até a 3.3. O logo no topo volta para o início.
+- Ícones dos jogos vêm direto do servidor de imagens da PSN (`icone_url`).
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.** 3.1 (base PWA) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.** 3.1 (base PWA) e 3.2 (tela inicial) em 28/10/2026.

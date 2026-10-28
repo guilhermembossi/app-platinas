@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { marca } from './config/marca';
 import { useSessao } from './sessao';
-import { supabase } from './supabase';
 import Logo from './componentes/Logo';
 import Acesso from './telas/Acesso';
+import Inicio, { ROTA_ADICIONAR } from './telas/Inicio';
 
 export default function App() {
   const { carregando, sessao } = useSessao();
@@ -12,20 +13,33 @@ export default function App() {
   return <Casca sessao={sessao} />;
 }
 
-// O app de quem já entrou. A lista de jogos entra na tarefa 3.2.
+// O app de quem já entrou. Navegação pelo # do endereço (funciona no GitHub Pages e o voltar do celular volta de tela).
 function Casca({ sessao }: { sessao: Session }) {
+  const [hash, setHash] = useState(location.hash);
+
+  useEffect(() => {
+    const aoMudar = () => { setHash(location.hash); window.scrollTo(0, 0); };
+    window.addEventListener('hashchange', aoMudar);
+    return () => window.removeEventListener('hashchange', aoMudar);
+  }, []);
+
   return (
     <div className="app">
       <header className="topo">
-        <div className="marca">
+        <a className="marca" href="#/">
           <Logo tamanho={28} />
           <span>{marca.nome}</span>
-        </div>
+        </a>
       </header>
 
       <main className="conteudo">
-        <p className="fraco">Entrou como {sessao.user.email}.</p>
-        <button type="button" className="link" onClick={() => supabase.auth.signOut()}>Sair</button>
+        {hash === ROTA_ADICIONAR ? (
+          // Busca e adicionar: tarefa 3.3.
+          <div className="cartao vazio">
+            <p>A busca de jogos entra na próxima etapa.</p>
+            <a className="link" href="#/">Voltar</a>
+          </div>
+        ) : <Inicio sessao={sessao} />}
       </main>
     </div>
   );
