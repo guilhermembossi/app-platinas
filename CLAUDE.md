@@ -77,5 +77,15 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - Teste: `node testes/teste_psn_auth.mjs` (o Guilherme roda com o e-mail e a senha **do Supabase**, não da PSN). Esperado: HTTP 200 `autenticado` e "Resposta sem tokens: OK".
 - Advisor depois da 2.2: além dos dois avisos já conhecidos, apareceu "Leaked Password Protection Disabled" (recurso do plano Pro; cadastro fechado, só o Guilherme). Aceito igual ao App Treino.
 
+## Buscar e adicionar jogo (tarefa 2.3, 28/10/2026)
+- Edge Function `psn-jogos` (publicar com `psn-jogos/index.ts` + `_shared/psn.ts`, entrypoint `psn-jogos/index.ts`, `verify_jwt` ligado). POST com JSON:
+  - `{ "acao": "buscar", "termo": "..." }` → até 20 jogos da conta cujo nome contém o termo (sem acento/maiúscula): `np_communication_id`, `nome`, `plataforma`, `icone_url`, `progresso_pct`, `ja_adicionado`.
+  - `{ "acao": "adicionar", "np_communication_id": "..." }` → só aceita jogo que está na conta (senão `nao_encontrado`, 404). Grava `games` (upsert por usuário + jogo) e todos os troféus (`getTitleTrophies` "all" em `pt-BR` e `en-US`, `getUserTrophiesEarnedForTitle`). Devolve resumo: %, total, conquistados e por tipo.
+- **% = o `progress` da própria PSN** (o mesmo do PS5, ponderado por tipo), não a conta de troféus.
+- Troféus de **DLC entram junto** (grupo "all"), como no PS5. Ainda não guardamos o grupo do troféu.
+- Adicionar de novo atualiza tudo **menos** `is_missable`/`missable_origem` (não vão no upsert).
+- O mesmo jogo pode existir em PS4 e PS5 (são `np_communication_id` diferentes): a busca mostra os dois com a plataforma.
+- Teste: `node testes/teste_jogo.mjs` (o Guilherme roda: e-mail e senha do Supabase, nome do jogo, número). Conferido com o PS5: Fallout 4 (PS5), 99%, 84 de 85.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO) e 2.2 (função psn-auth) em 28/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas), 1.2 (segurança), 1.3 (login), 2.1 (secret do NPSSO), 2.2 (função psn-auth) e 2.3 (buscar e adicionar jogo) em 28/10/2026. **Fase 2 concluída.**
