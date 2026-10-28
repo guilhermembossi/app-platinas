@@ -41,5 +41,13 @@ Fica no Obsidian, não neste repositório: `C:\Users\Guilherme Bossi\OneDrive\Do
 - **Nunca mexer no schema `public` desse projeto**: tem os dados de mercado do Cockpit Financeiro (`cdi`, `ipca`, `cambio`, `curvas_b3`, `calendario_divulgacoes`).
 - A região é EUA e não dá para trocar (o Supabase não permite mudar a região de um projeto existente).
 
+## Banco (tarefa 1.1, 28/10/2026)
+- Migrações em `supabase/migrations/<versão>_<nome>.sql`, com a mesma versão que aparece no histórico do Supabase. Mudança de banco sempre por migração nova (`apply_migration`), nunca editando uma já aplicada. O histórico do projeto também tem as migrações do Cockpit (`tabelas_mercado` etc.): não mexer.
+- Migração `20261028020002_platinas_tabelas`: schema `platinas` e as tabelas:
+  - `games`: um por jogo adicionado; `unique (user_id, np_communication_id)`. `np_service_name` (`trophy2` PS5, `trophy` PS4/PS3/Vita) é exigido pela `psn-api` para buscar os troféus. `guia_fonte` só `powerpyx`, `psnprofiles` ou `web`.
+  - `trophies`: filha de `games` (apagar o jogo apaga os troféus); `unique (game_id, trophy_id)`. Nome e descrição em PT (`nome`, `descricao`) e EN (`nome_en`, `descricao_en`, para cruzar com o guia). `tipo` em português (`bronze`, `prata`, `ouro`, `platina`). `missable_origem` `auto` ou `manual`. Tem `user_id` próprio para a RLS.
+  - `psn_auth`: uma linha por usuário com o refresh token da PSN e a validade. **Só o servidor.**
+- RLS ligada nas 3 e **nenhuma policy nem grant** ainda (tarefa 1.2). O schema novo não recebe permissões automáticas (sem `pg_default_acl` neste projeto) e ainda não está em Exposed schemas.
+
 ## Status
-- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026.
+- 0.1 (ambiente) e 0.2 (repositório e banco definido) feitas em 27/10/2026. 0.3 (este arquivo) em 27/10/2026. 1.1 (tabelas) em 28/10/2026.
