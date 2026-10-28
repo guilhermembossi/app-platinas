@@ -5,6 +5,7 @@ import { useSessao } from './sessao';
 import Logo from './componentes/Logo';
 import Acesso from './telas/Acesso';
 import Inicio, { ROTA_ADICIONAR } from './telas/Inicio';
+import Adicionar from './telas/Adicionar';
 
 export default function App() {
   const { carregando, sessao } = useSessao();
@@ -33,13 +34,7 @@ function Casca({ sessao }: { sessao: Session }) {
       </header>
 
       <main className="conteudo">
-        {hash === ROTA_ADICIONAR ? (
-          // Busca e adicionar: tarefa 3.3.
-          <div className="cartao vazio">
-            <p>A busca de jogos entra na próxima etapa.</p>
-            <a className="link" href="#/">Voltar</a>
-          </div>
-        ) : <Inicio sessao={sessao} />}
+        {hash === ROTA_ADICIONAR ? <Adicionar /> : <Inicio sessao={sessao} />}
       </main>
     </div>
   );
