@@ -92,6 +92,41 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .barra-progresso { height: 8px; border-radius: 4px; background: var(--borda); overflow: hidden; }
 .barra-progresso > div { height: 100%; border-radius: 4px; background: var(--primaria); }
 
+.jogo-link { color: inherit; text-decoration: none; }
+.jogo-link:active { border-color: var(--primaria); }
+
+/* Tela do jogo */
+.voltar { display: inline-block; margin-bottom: 0.5rem; }
+.jogo-topo { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1rem; }
+.jogo-topo .jogo { padding: 0; }
+.jogo-nome-grande { font-size: 1.15rem; margin: 0; line-height: 1.25; }
+
+.filtros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; padding: 0.25rem; margin-bottom: 1rem;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; }
+.filtro { min-height: 40px; border: 0; border-radius: 9px; background: none; color: var(--textoFraco); font-weight: 600; cursor: pointer; }
+.filtro[aria-selected='true'] { background: var(--borda); color: var(--texto); }
+.filtro-n { font-variant-numeric: tabular-nums; opacity: 0.75; font-weight: 400; }
+
+.lista-trofeus { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.trofeu { display: flex; gap: 0.75rem; padding: 0.75rem; }
+.trofeu.feito { opacity: 0.6; }
+.trofeu-icone { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: var(--borda); }
+.trofeu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.trofeu-titulo { display: flex; align-items: center; gap: 0.45rem; }
+.trofeu-nome { font-weight: 700; }
+.trofeu-descricao { margin: 0; font-size: 0.88rem; color: var(--textoFraco); }
+
+.tipo { flex: none; width: 12px; height: 12px; border-radius: 50%; }
+.tipo-platina { background: var(--platina); }
+.tipo-ouro { background: var(--ouro); }
+.tipo-prata { background: var(--prata); }
+.tipo-bronze { background: var(--bronze); }
+
+.etiquetas { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.etiqueta { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid var(--borda); color: var(--textoFraco); }
+.etiqueta.ok { border-color: var(--sucesso); color: var(--sucesso); }
+.etiqueta.alerta { border-color: var(--erro); color: var(--erro); font-weight: 600; }
+
 /* Adicionar jogo */
 .busca { display: flex; gap: 0.5rem; }
 .busca input {

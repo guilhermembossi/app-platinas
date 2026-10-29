@@ -6,6 +6,7 @@ import Logo from './componentes/Logo';
 import Acesso from './telas/Acesso';
 import Inicio, { ROTA_ADICIONAR } from './telas/Inicio';
 import Adicionar from './telas/Adicionar';
+import Jogo, { ROTA_JOGO } from './telas/Jogo';
 
 export default function App() {
   const { carregando, sessao } = useSessao();
@@ -34,7 +35,9 @@ function Casca({ sessao }: { sessao: Session }) {
       </header>
 
       <main className="conteudo">
-        {hash === ROTA_ADICIONAR ? <Adicionar /> : <Inicio sessao={sessao} />}
+        {hash === ROTA_ADICIONAR ? <Adicionar />
+          : hash.startsWith(ROTA_JOGO) ? <Jogo key={hash} id={hash.slice(ROTA_JOGO.length)} />
+            : <Inicio sessao={sessao} />}
       </main>
     </div>
   );

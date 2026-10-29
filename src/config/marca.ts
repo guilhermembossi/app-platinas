@@ -13,6 +13,10 @@ export type Paleta = {
   sobrePrimaria: string; // texto em cima da cor primária
   sucesso: string;
   erro: string;        // mensagens de erro
+  platina: string;     // cores dos tipos de troféu
+  ouro: string;
+  prata: string;
+  bronze: string;
 };
 
 export const marca = {
@@ -32,6 +36,10 @@ export const marca = {
     sobrePrimaria: '#0b1324',
     sucesso: '#4ade80',
     erro: '#fb923c',
+    platina: '#a8c4ff',
+    ouro: '#e5b84b',
+    prata: '#b8c0cc',
+    bronze: '#c58a5a',
   } satisfies Paleta,
   icone: { fundo: '#1e2a44', desenho: '#cfdcff' },
 };

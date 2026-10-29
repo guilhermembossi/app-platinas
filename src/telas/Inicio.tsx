@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { quando, useJogos, type Jogo } from '../dados/jogos';
 import { supabase } from '../supabase';
+import { ROTA_JOGO } from './Jogo';
 
 export const ROTA_ADICIONAR = '#/adicionar';
 
@@ -44,23 +45,25 @@ export default function Inicio({ sessao }: { sessao: Session }) {
 function CartaoJogo({ jogo }: { jogo: Jogo }) {
   const platinado = jogo.progresso_pct === 100;
   return (
-    <li className="cartao jogo">
-      {jogo.icone_url
-        ? <img className="jogo-icone" src={jogo.icone_url} alt="" width={64} height={64} loading="lazy" />
-        : <div className="jogo-icone" />}
-      <div className="jogo-info">
-        <div className="jogo-titulo">
-          <span className="jogo-nome">{jogo.nome}</span>
-          <span className={platinado ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>
+    <li>
+      <a className="cartao jogo jogo-link" href={`${ROTA_JOGO}${jogo.id}`}>
+        {jogo.icone_url
+          ? <img className="jogo-icone" src={jogo.icone_url} alt="" width={64} height={64} loading="lazy" />
+          : <div className="jogo-icone" />}
+        <div className="jogo-info">
+          <div className="jogo-titulo">
+            <span className="jogo-nome">{jogo.nome}</span>
+            <span className={platinado ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>
+          </div>
+          <div className="barra-progresso" role="progressbar" aria-valuenow={jogo.progresso_pct} aria-valuemin={0} aria-valuemax={100}
+            aria-label={`Progresso de ${jogo.nome}`}>
+            <div style={{ width: `${jogo.progresso_pct}%` }} />
+          </div>
+          <span className="fraco jogo-detalhe">
+            {jogo.plataforma}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
+          </span>
         </div>
-        <div className="barra-progresso" role="progressbar" aria-valuenow={jogo.progresso_pct} aria-valuemin={0} aria-valuemax={100}
-          aria-label={`Progresso de ${jogo.nome}`}>
-          <div style={{ width: `${jogo.progresso_pct}%` }} />
-        </div>
-        <span className="fraco jogo-detalhe">
-          {jogo.plataforma}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
-        </span>
-      </div>
+      </a>
     </li>
   );
 }
