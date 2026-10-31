@@ -24,10 +24,12 @@ export default function Inicio({ sessao }: { sessao: Session }) {
     <>
       <div className="cabecalho">
         <h1>Meus jogos</h1>
-        <a className="botao-primario botao-pequeno" href={ROTA_ADICIONAR}>+ Adicionar jogo</a>
+        <div className="cabecalho-acoes">
+          {jogos && jogos.length > 0 && <BotaoSincronizar aoTerminar={() => { recarregar(); conferir(); }} />}
+          <a className="botao-primario botao-pequeno" href={ROTA_ADICIONAR}>+ Adicionar jogo</a>
+        </div>
       </div>
       {vencido && <AvisoToken />}
-      {jogos && jogos.length > 0 && <BotaoSincronizar aoTerminar={() => { recarregar(); conferir(); }} />}
 
       {erro ? (
         <div className="cartao vazio">

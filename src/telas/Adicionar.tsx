@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { adicionarJogo, buscarJogos, mensagemPsn, type JogoDaConta } from '../dados/psn';
+import BotaoVoltar from '../componentes/BotaoVoltar';
 
 // Buscar um jogo entre os títulos da conta PSN e adicionar. Ao adicionar, volta para o início.
 export default function Adicionar() {
@@ -36,9 +37,9 @@ export default function Adicionar() {
 
   return (
     <>
-      <div className="cabecalho">
+      <div className="cabecalho cabecalho-com-voltar">
+        <BotaoVoltar para="#/" rotulo="Voltar para Meus jogos" />
         <h1>Adicionar jogo</h1>
-        <a className="link" href="#/">Voltar</a>
       </div>
 
       <form className="busca" onSubmit={buscar}>

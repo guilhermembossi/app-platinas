@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { quando } from '../dados/jogos';
 import { filtrar, GRUPO_BASE, porBloco, useJogo, type Filtro, type Grupo, type Trofeu } from '../dados/trofeus';
 import BotaoSincronizar from '../componentes/BotaoSincronizar';
+import BotaoVoltar from '../componentes/BotaoVoltar';
 
 export const ROTA_JOGO = '#/jogo/';
 
@@ -75,7 +76,12 @@ export default function Jogo({ id }: { id: string }) {
 
   return (
     <>
-      <a className="link voltar" href="#/">‹ Meus jogos</a>
+      <div className="barra-topo">
+        <BotaoVoltar para="#/" rotulo="Voltar para Meus jogos" />
+        <div className="cabecalho-acoes">
+          <BotaoSincronizar gameId={jogo.id} aoTerminar={recarregar} />
+        </div>
+      </div>
 
       <section className="cartao jogo-topo">
         <div className="jogo">
@@ -112,7 +118,6 @@ export default function Jogo({ id }: { id: string }) {
             </span>
           </li>
         </ul>
-        <BotaoSincronizar gameId={jogo.id} aoTerminar={recarregar} />
         {jogo.guia_url ? (
           <a className="botao-primario" href={jogo.guia_url} target="_blank" rel="noopener noreferrer">Abrir guia</a>
         ) : (

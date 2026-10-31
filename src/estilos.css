@@ -125,7 +125,33 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 }
 
 .link:disabled { opacity: 0.6; cursor: default; }
-.sincronizar { min-height: 44px; align-self: flex-start; }
+
+/* Botões redondos só com ícone: sincronizar e voltar (7.0 item 4) */
+.botao-redondo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--borda);
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+  cursor: pointer;
+}
+.botao-redondo:active { border-color: var(--primaria); }
+.botao-redondo:disabled { cursor: default; }
+.botao-redondo.girando svg { animation: girar 1s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .botao-redondo.girando svg { animation: none; } .botao-redondo.girando { opacity: 0.6; } }
+.cabecalho { flex-wrap: wrap; }
+.cabecalho-acoes { display: flex; align-items: center; gap: 0.5rem; }
+.cabecalho-com-voltar { justify-content: flex-start; }
+.barra-topo { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+/* O aviso de erro da sincronização ocupa uma linha inteira, embaixo dos botões */
+.aviso-sync { flex-basis: 100%; order: 3; margin: 0.5rem 0 0; }
+.cabecalho-acoes:has(.aviso-sync) { flex-wrap: wrap; justify-content: flex-end; }
 
 /* Aviso de token da PSN vencido (5.3) */
 .aviso-token { border-color: var(--erro); margin-bottom: 1rem; }

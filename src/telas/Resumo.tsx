@@ -23,8 +23,10 @@ export default function Resumo() {
     <>
       <div className="cabecalho">
         <h1>Resumo</h1>
+        <div className="cabecalho-acoes">
+          <BotaoSincronizar aoTerminar={recarregar} />
+        </div>
       </div>
-      <BotaoSincronizar aoTerminar={recarregar} />
 
       {perfil === 'vazio' ? (
         <div className="cartao vazio">
