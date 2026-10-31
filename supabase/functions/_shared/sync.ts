@@ -52,6 +52,8 @@ export async function gravarJogo(
   const grupos = blocos.trophyGroups.map((g) => ({ id: g.trophyGroupId, nome: g.trophyGroupName }));
   // A platina só existe no jogo base; platinado = ela foi conquistada (100% é o progresso da PSN).
   const platinado = pt.trophies.some((t) => t.trophyType === 'platinum' && ganhos.get(t.trophyId)?.earned);
+  // "X de Y troféus" do card de Meus jogos (7.0 item 5).
+  const trofeusConquistados = pt.trophies.filter((t) => ganhos.get(t.trophyId)?.earned).length;
 
   const agora = new Date().toISOString();
   const { data: jogo, error: erroJogo } = await admin
@@ -67,6 +69,8 @@ export async function gravarJogo(
         progresso_pct: titulo.progress,
         grupos,
         platinado,
+        trofeus_total: pt.trophies.length,
+        trofeus_conquistados: trofeusConquistados,
         ultima_sync: agora,
       },
       { onConflict: 'user_id,np_communication_id' },

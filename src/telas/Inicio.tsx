@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { quando, useJogos, type Jogo } from '../dados/jogos';
+import { plataformaLegivel, quando, useJogos, type Jogo } from '../dados/jogos';
 import { supabase } from '../supabase';
 import { useTokenVencido } from '../dados/estadoPsn';
 import AvisoToken from '../componentes/AvisoToken';
@@ -92,9 +92,10 @@ function CartaoJogo({ jogo, aoTrocarFixado }: { jogo: Jogo; aoTrocarFixado: () =
             aria-label={`Progresso de ${jogo.nome}`}>
             <div style={{ width: `${jogo.progresso_pct}%` }} />
           </div>
-          <span className="fraco jogo-detalhe">
-            {jogo.plataforma}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
+          <span className="jogo-detalhe">
+            {plataformaLegivel(jogo.plataforma)} · {jogo.trofeus_conquistados} de {jogo.trofeus_total} troféus
           </span>
+          {jogo.ultima_sync && <span className="fraco jogo-detalhe">sincronizado {quando(jogo.ultima_sync)}</span>}
         </div>
       </a>
     </li>

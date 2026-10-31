@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { quando } from '../dados/jogos';
+import { plataformaLegivel, quando } from '../dados/jogos';
 import { filtrar, GRUPO_BASE, porBloco, useJogo, type Filtro, type Grupo, type Trofeu } from '../dados/trofeus';
 import BotaoSincronizar from '../componentes/BotaoSincronizar';
 import BotaoVoltar from '../componentes/BotaoVoltar';
@@ -91,7 +91,7 @@ export default function Jogo({ id }: { id: string }) {
           <div className="jogo-info">
             <h1 className="jogo-nome-grande">{jogo.nome}</h1>
             <span className="fraco jogo-detalhe">
-              {jogo.plataforma}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
+              {plataformaLegivel(jogo.plataforma)}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
             </span>
           </div>
           <span className={jogo.progresso_pct === 100 ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>

@@ -10,7 +10,12 @@ export type Jogo = {
   ultima_sync: string | null;
   platinado: boolean;
   fixado: boolean;
+  trofeus_total: number;
+  trofeus_conquistados: number;
 };
+
+// "PS5,PSPC" (jogo com versão de PC na mesma lista de troféus) → "PS5 / PC".
+export const plataformaLegivel = (p: string | null) => (p ?? '').split(',').map((x) => (x === 'PSPC' ? 'PC' : x)).join(' / ');
 
 // Ordem de "Meus jogos" (7.0 item 2): fixados primeiro, depois o resto; cada parte em ordem
 // alfabética, sem diferença de maiúscula ou acento ("Ōkami" junto de "Okami").
@@ -28,7 +33,7 @@ export function useJogos() {
     setErro(false);
     const { data, error } = await supabase
       .from('games')
-      .select('id, nome, plataforma, icone_url, progresso_pct, ultima_sync, platinado, fixado');
+      .select('id, nome, plataforma, icone_url, progresso_pct, ultima_sync, platinado, fixado, trofeus_total, trofeus_conquistados');
     if (error) setErro(true);
     else setJogos(ordenar(data));
   }, []);
