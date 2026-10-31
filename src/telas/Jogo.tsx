@@ -190,13 +190,20 @@ function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocar
           {t.conquistado
             ? <span className="etiqueta ok">✓ Conquistado{t.conquistado_em ? ` em ${new Date(t.conquistado_em).toLocaleDateString('pt-BR')}` : ''}</span>
             : <span className="etiqueta">Faltando</span>}
+          {t.is_missable && <span className="etiqueta alerta">Missable</span>}
           {t.oculto && <span className="etiqueta">Oculto</span>}
         </div>
-        <button type="button" className={t.is_missable ? 'botao-missable marcado' : 'botao-missable'}
-          aria-pressed={t.is_missable} onClick={aoTrocarMissable}>
-          {t.is_missable ? '⚠ Missable · desmarcar' : 'Marcar como missable'}
-        </button>
       </div>
+      {/* Bandeirinha à direita (7.0 item 6): cinza = não marcado; laranja e cheia = missable. */}
+      <button type="button" className={t.is_missable ? 'bandeira marcada' : 'bandeira'} aria-pressed={t.is_missable}
+        aria-label={t.is_missable ? `Desmarcar ${t.nome} como missable` : `Marcar ${t.nome} como missable`}
+        onClick={aoTrocarMissable}>
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 22V4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M5 4h12l-2.5 4.5L17 13H5z" fill={t.is_missable ? 'currentColor' : 'none'}
+            stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+      </button>
     </li>
   );
 }
