@@ -6,6 +6,7 @@ export type TipoTrofeu = 'platina' | 'ouro' | 'prata' | 'bronze';
 export type Trofeu = {
   id: string;
   trophy_id: number;
+  grupo_id: string;
   nome: string;
   descricao: string | null;
   tipo: TipoTrofeu;
@@ -24,9 +25,23 @@ export type DetalheJogo = {
   progresso_pct: number;
   guia_url: string | null;
   ultima_sync: string | null;
+  grupos: Grupo[];
+  platinado: boolean;
 };
 
+// Bloco de troféus da PSN (7.0 item 1): 'default' = jogo base; '001', '002'... = DLCs.
+export type Grupo = { id: string; nome: string };
+export const GRUPO_BASE = 'default';
+
 export type Filtro = 'todos' | 'faltando' | 'missables';
+
+// Junta os troféus por bloco, na ordem da PSN. Blocos sem troféu nenhum (depois do filtro) somem.
+export function porBloco(trofeus: Trofeu[], grupos: Grupo[]): { grupo: Grupo; trofeus: Trofeu[] }[] {
+  const ordem = grupos.length > 0 ? grupos : [{ id: GRUPO_BASE, nome: '' }];
+  return ordem
+    .map((grupo) => ({ grupo, trofeus: trofeus.filter((t) => t.grupo_id === grupo.id) }))
+    .filter((b) => b.trofeus.length > 0);
+}
 
 export function filtrar(trofeus: Trofeu[], filtro: Filtro): Trofeu[] {
   if (filtro === 'faltando') return trofeus.filter((t) => !t.conquistado);
@@ -46,10 +61,10 @@ export function useJogo(id: string) {
     setErro(false);
     Promise.all([
       supabase.from('games')
-        .select('id, nome, plataforma, icone_url, progresso_pct, guia_url, ultima_sync')
+        .select('id, nome, plataforma, icone_url, progresso_pct, guia_url, ultima_sync, grupos, platinado')
         .eq('id', id).maybeSingle(),
       supabase.from('trophies')
-        .select('id, trophy_id, nome, descricao, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable')
+        .select('id, trophy_id, grupo_id, nome, descricao, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable')
         .eq('game_id', id).order('trophy_id'),
     ]).then(([g, t]) => {
       if (!ativo) return;

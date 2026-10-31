@@ -8,6 +8,7 @@ export type Jogo = {
   icone_url: string | null;
   progresso_pct: number;
   ultima_sync: string | null;
+  platinado: boolean;
 };
 
 // Jogos adicionados (a RLS só devolve os do usuário logado), na ordem em que foram adicionados.
@@ -19,7 +20,7 @@ export function useJogos() {
     setErro(false);
     const { data, error } = await supabase
       .from('games')
-      .select('id, nome, plataforma, icone_url, progresso_pct, ultima_sync')
+      .select('id, nome, plataforma, icone_url, progresso_pct, ultima_sync, platinado')
       .order('adicionado_em');
     if (error) setErro(true);
     else setJogos(data);

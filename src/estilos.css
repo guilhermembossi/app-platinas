@@ -148,6 +148,16 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .etiqueta { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid var(--borda); color: var(--textoFraco); }
 .etiqueta.ok { border-color: var(--sucesso); color: var(--sucesso); }
 .etiqueta.alerta { border-color: var(--erro); color: var(--erro); font-weight: 600; }
+.etiqueta.platina { border-color: var(--platina); color: var(--platina); font-weight: 600; }
+
+/* Platina × 100% e blocos da PSN (7.0 item 1) */
+.metas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }
+.meta { display: flex; align-items: center; gap: 0.5rem; }
+.meta-nome { font-weight: 700; min-width: 4.5rem; }
+.meta-valor { color: var(--textoFraco); }
+.meta.feita .meta-valor { color: var(--sucesso); font-weight: 600; }
+.bloco + .bloco { margin-top: 1.25rem; }
+.bloco-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; margin: 0 0 0.5rem; font-size: 1rem; }
 
 /* Marcar missable à mão (4.4): toque grande, mas discreto quando desmarcado */
 .botao-missable {

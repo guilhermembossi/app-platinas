@@ -48,8 +48,9 @@ export default function Inicio({ sessao }: { sessao: Session }) {
   );
 }
 
+// Platina (só jogo base) e 100% (todos os blocos) são coisas diferentes (7.0 item 1).
 function CartaoJogo({ jogo }: { jogo: Jogo }) {
-  const platinado = jogo.progresso_pct === 100;
+  const completo = jogo.progresso_pct === 100;
   return (
     <li>
       <a className="cartao jogo jogo-link" href={`${ROTA_JOGO}${jogo.id}`}>
@@ -59,8 +60,14 @@ function CartaoJogo({ jogo }: { jogo: Jogo }) {
         <div className="jogo-info">
           <div className="jogo-titulo">
             <span className="jogo-nome">{jogo.nome}</span>
-            <span className={platinado ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>
+            <span className={completo ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>
           </div>
+          {jogo.platinado && (
+            <div className="etiquetas">
+              <span className="etiqueta platina">✓ Platina</span>
+              {completo && <span className="etiqueta ok">✓ 100%</span>}
+            </div>
+          )}
           <div className="barra-progresso" role="progressbar" aria-valuenow={jogo.progresso_pct} aria-valuemin={0} aria-valuemax={100}
             aria-label={`Progresso de ${jogo.nome}`}>
             <div style={{ width: `${jogo.progresso_pct}%` }} />

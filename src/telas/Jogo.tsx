@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { quando } from '../dados/jogos';
-import { filtrar, useJogo, type Filtro, type Trofeu } from '../dados/trofeus';
+import { filtrar, GRUPO_BASE, porBloco, useJogo, type Filtro, type Grupo, type Trofeu } from '../dados/trofeus';
 import BotaoSincronizar from '../componentes/BotaoSincronizar';
 
 export const ROTA_JOGO = '#/jogo/';
@@ -13,11 +13,14 @@ const FILTROS: { id: Filtro; nome: string }[] = [
 
 const VAZIO: Record<Filtro, string> = {
   todos: 'Esse jogo não tem troféus.',
-  faltando: 'Nenhum troféu faltando. Platinado!',
+  faltando: 'Nenhum troféu faltando: 100%!',
   missables: 'Nenhum troféu marcado como missable.',
 };
 
 const TIPOS = { platina: 'Platina', ouro: 'Ouro', prata: 'Prata', bronze: 'Bronze' };
+
+// A PSN dá ao jogo base o nome do próprio jogo; "Jogo base" deixa claro onde está a platina.
+const nomeDoBloco = (g: Grupo) => (g.id === GRUPO_BASE ? 'Jogo base' : g.nome || `DLC ${g.id}`);
 
 // Busca pronta para quando o jogo não tem guia na PowerPyx (normalmente o PSNProfiles aparece no topo).
 const buscaDoGuia = (nome: string) =>
@@ -54,6 +57,11 @@ export default function Jogo({ id }: { id: string }) {
 
   const conquistados = trofeus.filter((t) => t.conquistado).length;
   const lista = filtrar(trofeus, filtro);
+  // Platina × 100% (7.0 item 1): a platina vale só pelo jogo base; 100% = todos os blocos.
+  const base = trofeus.filter((t) => t.grupo_id === GRUPO_BASE);
+  const temPlatina = base.some((t) => t.tipo === 'platina');
+  const temDlc = jogo.grupos.length > 1;
+  const blocos = porBloco(lista, jogo.grupos);
 
   return (
     <>
@@ -67,8 +75,7 @@ export default function Jogo({ id }: { id: string }) {
           <div className="jogo-info">
             <h1 className="jogo-nome-grande">{jogo.nome}</h1>
             <span className="fraco jogo-detalhe">
-              {jogo.plataforma} · {conquistados} de {trofeus.length} troféus
-              {jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
+              {jogo.plataforma}{jogo.ultima_sync ? ` · sincronizado ${quando(jogo.ultima_sync)}` : ''}
             </span>
           </div>
           <span className={jogo.progresso_pct === 100 ? 'jogo-pct platinado' : 'jogo-pct'}>{jogo.progresso_pct}%</span>
@@ -77,6 +84,24 @@ export default function Jogo({ id }: { id: string }) {
           aria-label="Progresso">
           <div style={{ width: `${jogo.progresso_pct}%` }} />
         </div>
+        <ul className="metas">
+          <li className={jogo.platinado ? 'meta feita' : 'meta'}>
+            <span className="tipo tipo-platina" aria-hidden="true" />
+            <span className="meta-nome">Platina</span>
+            <span className="meta-valor">
+              {!temPlatina ? 'esse jogo não tem'
+                : jogo.platinado ? '✓ conquistada'
+                  : `jogo base: ${base.filter((t) => t.conquistado).length} de ${base.length}`}
+            </span>
+          </li>
+          <li className={conquistados === trofeus.length && trofeus.length > 0 ? 'meta feita' : 'meta'}>
+            <span className="meta-nome">100%</span>
+            <span className="meta-valor">
+              {conquistados === trofeus.length && trofeus.length > 0 ? '✓ completo'
+                : `${conquistados} de ${trofeus.length} troféus${temDlc ? ', com DLCs' : ''}`}
+            </span>
+          </li>
+        </ul>
         <BotaoSincronizar gameId={jogo.id} aoTerminar={recarregar} />
         {jogo.guia_url ? (
           <a className="botao-primario" href={jogo.guia_url} target="_blank" rel="noopener noreferrer">Abrir guia</a>
@@ -105,9 +130,25 @@ export default function Jogo({ id }: { id: string }) {
       {lista.length === 0 ? (
         <div className="cartao vazio"><p>{VAZIO[filtro]}</p></div>
       ) : (
-        <ul className="lista-trofeus">
-          {lista.map((t) => <LinhaTrofeu key={t.id} trofeu={t} aoTrocarMissable={() => trocarMissable(t)} />)}
-        </ul>
+        // Um bloco por parte do jogo, na ordem da PSN; o título só aparece quando há DLC.
+        blocos.map(({ grupo, trofeus: doBloco }) => {
+          const todosDoBloco = trofeus.filter((t) => t.grupo_id === grupo.id);
+          return (
+            <section key={grupo.id} className="bloco" aria-label={nomeDoBloco(grupo)}>
+              {temDlc && (
+                <h2 className="bloco-titulo">
+                  <span>{nomeDoBloco(grupo)}</span>
+                  <span className="fraco">
+                    {todosDoBloco.filter((t) => t.conquistado).length} de {todosDoBloco.length}
+                  </span>
+                </h2>
+              )}
+              <ul className="lista-trofeus">
+                {doBloco.map((t) => <LinhaTrofeu key={t.id} trofeu={t} aoTrocarMissable={() => trocarMissable(t)} />)}
+              </ul>
+            </section>
+          );
+        })
       )}
     </>
   );
