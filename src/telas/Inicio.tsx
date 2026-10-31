@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { quando, useJogos, type Jogo } from '../dados/jogos';
 import { supabase } from '../supabase';
@@ -10,8 +11,14 @@ export const ROTA_ADICIONAR = '#/adicionar';
 
 // Tela inicial: os jogos adicionados com ícone, % e barra, e a última sincronização de cada um.
 export default function Inicio({ sessao }: { sessao: Session }) {
-  const { jogos, erro, recarregar } = useJogos();
+  const { jogos, erro, recarregar, alterarFixado } = useJogos();
   const { vencido, conferir } = useTokenVencido();
+  const [erroFixar, setErroFixar] = useState(false);
+
+  async function trocarFixado(j: Jogo) {
+    setErroFixar(false);
+    if (!(await alterarFixado(j.id, !j.fixado))) setErroFixar(true);
+  }
 
   return (
     <>
@@ -35,9 +42,12 @@ export default function Inicio({ sessao }: { sessao: Session }) {
           <p className="fraco">Toque em "Adicionar jogo" e escolha um jogo da sua conta PSN.</p>
         </div>
       ) : (
-        <ul className="lista-jogos">
-          {jogos.map((j) => <CartaoJogo key={j.id} jogo={j} />)}
-        </ul>
+        <>
+          {erroFixar && <p className="mensagem erro" role="alert">Não deu para fixar o jogo. Tente de novo.</p>}
+          <ul className="lista-jogos">
+            {jogos.map((j) => <CartaoJogo key={j.id} jogo={j} aoTrocarFixado={() => trocarFixado(j)} />)}
+          </ul>
+        </>
       )}
 
       <footer className="rodape">
@@ -49,11 +59,19 @@ export default function Inicio({ sessao }: { sessao: Session }) {
 }
 
 // Platina (só jogo base) e 100% (todos os blocos) são coisas diferentes (7.0 item 1).
-function CartaoJogo({ jogo }: { jogo: Jogo }) {
+// A estrela fica fora do link (botão dentro de link não é permitido) e fixa o jogo no topo (item 2).
+function CartaoJogo({ jogo, aoTrocarFixado }: { jogo: Jogo; aoTrocarFixado: () => void }) {
   const completo = jogo.progresso_pct === 100;
   return (
-    <li>
-      <a className="cartao jogo jogo-link" href={`${ROTA_JOGO}${jogo.id}`}>
+    <li className="cartao cartao-jogo">
+      <button type="button" className={jogo.fixado ? 'estrela fixada' : 'estrela'} aria-pressed={jogo.fixado}
+        aria-label={jogo.fixado ? `Desafixar ${jogo.nome}` : `Fixar ${jogo.nome} no topo`} onClick={aoTrocarFixado}>
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"
+            fill={jogo.fixado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <a className="jogo jogo-link" href={`${ROTA_JOGO}${jogo.id}`}>
         {jogo.icone_url
           ? <img className="jogo-icone" src={jogo.icone_url} alt="" width={64} height={64} loading="lazy" />
           : <div className="jogo-icone" />}

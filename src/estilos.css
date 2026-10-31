@@ -115,7 +115,26 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .barra-progresso > div { height: 100%; border-radius: 4px; background: var(--primaria); }
 
 .jogo-link { color: inherit; text-decoration: none; }
-.jogo-link:active { border-color: var(--primaria); }
+
+/* Card de "Meus jogos": link do jogo + estrela à direita (7.0 item 2) */
+.cartao-jogo { display: flex; align-items: center; padding: 0; }
+.cartao-jogo:active { border-color: var(--primaria); }
+.cartao-jogo .jogo-link { flex: 1; min-width: 0; }
+.estrela {
+  order: 2;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin-right: 0.25rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--textoFraco);
+  cursor: pointer;
+}
+.estrela.fixada { color: var(--ouro); }
 
 /* Tela do jogo */
 .voltar { display: inline-block; margin-bottom: 0.5rem; }
