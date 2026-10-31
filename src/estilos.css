@@ -156,8 +156,28 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .meta-nome { font-weight: 700; min-width: 4.5rem; }
 .meta-valor { color: var(--textoFraco); }
 .meta.feita .meta-valor { color: var(--sucesso); font-weight: 600; }
-.bloco + .bloco { margin-top: 1.25rem; }
-.bloco-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; margin: 0 0 0.5rem; font-size: 1rem; }
+.bloco + .bloco { margin-top: 0.75rem; }
+/* Cabeçalho do bloco (abre e fecha): área de toque de 44px, seta que gira */
+.bloco-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--superficie);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.bloco-titulo::-webkit-details-marker { display: none; }
+.bloco-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bloco-titulo .fraco { font-weight: 400; font-size: 0.9rem; }
+.bloco-seta { flex: none; width: 8px; height: 8px; border-right: 2px solid var(--textoFraco); border-bottom: 2px solid var(--textoFraco); transform: rotate(-45deg); transition: transform 0.15s; }
+details[open] > .bloco-titulo .bloco-seta { transform: rotate(45deg); }
+details:not([open]) > .bloco-titulo { margin-bottom: 0; }
 
 /* Marcar missable à mão (4.4): toque grande, mas discreto quando desmarcado */
 .botao-missable {

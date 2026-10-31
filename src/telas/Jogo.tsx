@@ -31,6 +31,16 @@ export default function Jogo({ id }: { id: string }) {
   const { jogo, trofeus, erro, recarregar, alterarMissable } = useJogo(id);
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [erroMissable, setErroMissable] = useState(false);
+  const [fechados, setFechados] = useState<Set<string>>(() => new Set());
+
+  function alternarBloco(grupoId: string, aberto: boolean) {
+    setFechados((atual) => {
+      if (aberto === !atual.has(grupoId)) return atual; // nada mudou (o React também dispara ao montar)
+      const novo = new Set(atual);
+      if (aberto) novo.delete(grupoId); else novo.add(grupoId);
+      return novo;
+    });
+  }
 
   async function trocarMissable(t: Trofeu) {
     setErroMissable(false);
@@ -130,23 +140,28 @@ export default function Jogo({ id }: { id: string }) {
       {lista.length === 0 ? (
         <div className="cartao vazio"><p>{VAZIO[filtro]}</p></div>
       ) : (
-        // Um bloco por parte do jogo, na ordem da PSN; o título só aparece quando há DLC.
+        // Um bloco por parte do jogo, na ordem da PSN. Com DLC, cada bloco abre e fecha
+        // (começam abertos; fechar vale enquanto a tela está aberta, inclusive trocando de filtro).
         blocos.map(({ grupo, trofeus: doBloco }) => {
+          const itens = (
+            <ul className="lista-trofeus">
+              {doBloco.map((t) => <LinhaTrofeu key={t.id} trofeu={t} aoTrocarMissable={() => trocarMissable(t)} />)}
+            </ul>
+          );
+          if (!temDlc) return <section key={grupo.id} className="bloco">{itens}</section>;
           const todosDoBloco = trofeus.filter((t) => t.grupo_id === grupo.id);
           return (
-            <section key={grupo.id} className="bloco" aria-label={nomeDoBloco(grupo)}>
-              {temDlc && (
-                <h2 className="bloco-titulo">
-                  <span>{nomeDoBloco(grupo)}</span>
-                  <span className="fraco">
-                    {todosDoBloco.filter((t) => t.conquistado).length} de {todosDoBloco.length}
-                  </span>
-                </h2>
-              )}
-              <ul className="lista-trofeus">
-                {doBloco.map((t) => <LinhaTrofeu key={t.id} trofeu={t} aoTrocarMissable={() => trocarMissable(t)} />)}
-              </ul>
-            </section>
+            <details key={grupo.id} className="bloco" open={!fechados.has(grupo.id)}
+              onToggle={(e) => alternarBloco(grupo.id, e.currentTarget.open)}>
+              <summary className="bloco-titulo">
+                <span className="bloco-seta" aria-hidden="true" />
+                <span className="bloco-nome">{nomeDoBloco(grupo)}</span>
+                <span className="fraco">
+                  {todosDoBloco.filter((t) => t.conquistado).length} de {todosDoBloco.length}
+                </span>
+              </summary>
+              {itens}
+            </details>
           );
         })
       )}
