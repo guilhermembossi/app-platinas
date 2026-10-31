@@ -2,6 +2,7 @@
 // (jogo + todos os troféus em PT e EN + o progresso do Guilherme).
 // POST { acao: "buscar", termo }                    → { jogos: [...] }
 // POST { acao: "adicionar", np_communication_id }   → { jogo: {...} } (e procura o guia, tarefa 4.1)
+// POST { acao: "sincronizar", game_id? }            → { atualizados, falharam } (tarefa 5.1)
 // Nunca devolve nem registra tokens.
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 import {
@@ -65,11 +66,16 @@ async function buscar(admin: SupabaseClient, userId: string, acesso: Acesso, ter
   });
 }
 
-async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, npId: string) {
-  // Só jogos que estão na conta: o título também traz nome, ícone, plataforma e o % da PSN.
-  const titulo = (await titulosDaConta(acesso)).find((t) => t.npCommunicationId === npId);
-  if (!titulo) return resposta({ status: 'nao_encontrado' }, 404);
-
+// Grava (ou atualiza) um jogo e todos os troféus dele a partir do título da PSN.
+// Usado por adicionar e sincronizar. O guia só é procurado ao adicionar (`procurarGuia`).
+async function gravarJogo(
+  admin: SupabaseClient,
+  userId: string,
+  acesso: Acesso,
+  titulo: TrophyTitle,
+  procurarGuia: boolean,
+) {
+  const npId = titulo.npCommunicationId;
   const opcoes = { npServiceName: titulo.npServiceName };
   const [pt, en, meus] = await Promise.all([
     getTitleTrophies(acesso, npId, 'all', { ...opcoes, headerOverrides: { 'Accept-Language': 'pt-BR' } }),
@@ -123,16 +129,25 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
 
   // Guia (tarefa 4.1): só procura se o jogo ainda não tem; adicionar de novo não troca o link.
   let guia = jogo.guia_url ? { url: jogo.guia_url, fonte: jogo.guia_fonte } : null;
-  if (!guia) {
+  if (!guia && procurarGuia) {
     guia = await acharGuia(titulo.trophyTitleName);
     if (guia) await admin.from('games').update({ guia_url: guia.url, guia_fonte: guia.fonte }).eq('id', jogo.id);
   }
 
+  return { id: jogo.id as string, trofeus, guia };
+}
+
+async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, npId: string) {
+  // Só jogos que estão na conta: o título também traz nome, ícone, plataforma e o % da PSN.
+  const titulo = (await titulosDaConta(acesso)).find((t) => t.npCommunicationId === npId);
+  if (!titulo) return resposta({ status: 'nao_encontrado' }, 404);
+
+  const { id, trofeus, guia } = await gravarJogo(admin, userId, acesso, titulo, true);
   const conquistados = trofeus.filter((t) => t.conquistado).length;
   return resposta({
     status: 'ok',
     jogo: {
-      id: jogo.id,
+      id,
       nome: titulo.trophyTitleName,
       plataforma: titulo.trophyTitlePlatform,
       progresso_pct: titulo.progress,
@@ -147,6 +162,31 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
       ),
     },
   });
+}
+
+// Tarefa 5.1: atualiza o progresso e os troféus dos jogos adicionados (todos, ou só `gameId`).
+// Uma busca da lista de títulos para todos; um jogo com erro não impede os outros.
+async function sincronizar(admin: SupabaseClient, userId: string, acesso: Acesso, gameId?: string) {
+  let consulta = admin.from('games').select('id, np_communication_id').eq('user_id', userId);
+  if (gameId) consulta = consulta.eq('id', gameId);
+  const { data: jogos, error } = await consulta;
+  if (error) throw new Error('falha ao ler os jogos');
+  if (gameId && jogos.length === 0) return { status: 'nao_encontrado', atualizados: 0, falharam: 0 };
+
+  const titulos = new Map((await titulosDaConta(acesso)).map((t) => [t.npCommunicationId, t]));
+  let atualizados = 0;
+  let falharam = 0;
+  for (const jogo of jogos) {
+    const titulo = titulos.get(jogo.np_communication_id);
+    if (!titulo) { falharam++; continue; }
+    try {
+      await gravarJogo(admin, userId, acesso, titulo, false);
+      atualizados++;
+    } catch {
+      falharam++;
+    }
+  }
+  return { status: 'ok', atualizados, falharam };
 }
 
 // Toda resposta leva os cabeçalhos de CORS (o app chama do navegador, tarefa 3.3).
@@ -167,7 +207,7 @@ async function atender(req: Request): Promise<Response> {
   const { data: { user } } = await admin.auth.getUser(jwt);
   if (!user) return resposta({ status: 'sem_login' }, 401);
 
-  let corpo: { acao?: string; termo?: string; np_communication_id?: string };
+  let corpo: { acao?: string; termo?: string; np_communication_id?: string; game_id?: string };
   try {
     corpo = await req.json();
   } catch {
@@ -180,6 +220,10 @@ async function atender(req: Request): Promise<Response> {
     if (corpo.acao === 'buscar') return await buscar(admin, user.id, acesso, corpo.termo ?? '');
     if (corpo.acao === 'adicionar' && corpo.np_communication_id) {
       return await adicionar(admin, user.id, acesso, corpo.np_communication_id);
+    }
+    if (corpo.acao === 'sincronizar') {
+      const r = await sincronizar(admin, user.id, acesso, corpo.game_id);
+      return resposta(r, r.status === 'nao_encontrado' ? 404 : 200);
     }
     return resposta({ status: 'pedido_invalido' }, 400);
   } catch (e) {

@@ -30,6 +30,11 @@ export async function adicionarJogo(npCommunicationId: string): Promise<void> {
   await psnJogos({ acao: 'adicionar', np_communication_id: npCommunicationId });
 }
 
+// Atualiza progresso e troféus de todos os jogos, ou só de um (tarefa 5.1).
+export async function sincronizarJogos(gameId?: string): Promise<{ atualizados: number; falharam: number }> {
+  return psnJogos(gameId ? { acao: 'sincronizar', game_id: gameId } : { acao: 'sincronizar' });
+}
+
 const MENSAGENS: Record<string, string> = {
   token_expirado: 'O acesso à PSN venceu. Gere um NPSSO novo e salve no Supabase.',
   nao_encontrado: 'Esse jogo não está mais na sua conta PSN.',

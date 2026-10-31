@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { quando } from '../dados/jogos';
 import { filtrar, useJogo, type Filtro, type Trofeu } from '../dados/trofeus';
+import BotaoSincronizar from '../componentes/BotaoSincronizar';
 
 export const ROTA_JOGO = '#/jogo/';
 
@@ -76,6 +77,7 @@ export default function Jogo({ id }: { id: string }) {
           aria-label="Progresso">
           <div style={{ width: `${jogo.progresso_pct}%` }} />
         </div>
+        <BotaoSincronizar gameId={jogo.id} aoTerminar={recarregar} />
         {jogo.guia_url ? (
           <a className="botao-primario" href={jogo.guia_url} target="_blank" rel="noopener noreferrer">Abrir guia</a>
         ) : (
