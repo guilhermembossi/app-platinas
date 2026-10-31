@@ -59,6 +59,18 @@ button { font: inherit; }
 }
 .botao-primario:disabled { opacity: 0.45; cursor: default; }
 a.botao-primario { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.botao-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--primaria);
+  border-radius: 12px;
+  color: var(--primaria);
+  font-weight: 700;
+  text-decoration: none;
+}
 .botao-pequeno { width: auto; min-height: 44px; padding: 0 1rem; font-size: 0.95rem; }
 
 .link {

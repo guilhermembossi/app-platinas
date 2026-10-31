@@ -1,7 +1,7 @@
 // Tarefa 2.3: buscar jogos entre os títulos da conta PSN e adicionar um jogo
 // (jogo + todos os troféus em PT e EN + o progresso do Guilherme).
 // POST { acao: "buscar", termo }                    → { jogos: [...] }
-// POST { acao: "adicionar", np_communication_id }   → { jogo: {...} }
+// POST { acao: "adicionar", np_communication_id }   → { jogo: {...} } (e procura o guia, tarefa 4.1)
 // Nunca devolve nem registra tokens.
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 import {
@@ -11,6 +11,7 @@ import {
   type TrophyTitle,
 } from 'npm:psn-api@2.18.1';
 import { cabecalhosCors } from '../_shared/cors.ts';
+import { acharGuia } from '../_shared/guia.ts';
 import { obterAcessoPsn, PsnTokenExpirado } from '../_shared/psn.ts';
 
 type Acesso = { accessToken: string };
@@ -94,7 +95,7 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
       },
       { onConflict: 'user_id,np_communication_id' },
     )
-    .select('id')
+    .select('id, guia_url, guia_fonte')
     .single();
   if (erroJogo || !jogo) throw new Error('falha ao gravar o jogo');
 
@@ -120,6 +121,13 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
   const { error: erroTrofeus } = await admin.from('trophies').upsert(trofeus, { onConflict: 'game_id,trophy_id' });
   if (erroTrofeus) throw new Error('falha ao gravar os troféus');
 
+  // Guia (tarefa 4.1): só procura se o jogo ainda não tem; adicionar de novo não troca o link.
+  let guia = jogo.guia_url ? { url: jogo.guia_url, fonte: jogo.guia_fonte } : null;
+  if (!guia) {
+    guia = await acharGuia(titulo.trophyTitleName);
+    if (guia) await admin.from('games').update({ guia_url: guia.url, guia_fonte: guia.fonte }).eq('id', jogo.id);
+  }
+
   const conquistados = trofeus.filter((t) => t.conquistado).length;
   return resposta({
     status: 'ok',
@@ -130,6 +138,7 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
       progresso_pct: titulo.progress,
       trofeus: trofeus.length,
       conquistados,
+      guia,
       por_tipo: Object.fromEntries(
         ['platina', 'ouro', 'prata', 'bronze'].map((tipo) => {
           const doTipo = trofeus.filter((t) => t.tipo === tipo);

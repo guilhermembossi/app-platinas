@@ -18,6 +18,10 @@ const VAZIO: Record<Filtro, string> = {
 
 const TIPOS = { platina: 'Platina', ouro: 'Ouro', prata: 'Prata', bronze: 'Bronze' };
 
+// Busca pronta para quando o jogo não tem guia na PowerPyx (normalmente o PSNProfiles aparece no topo).
+const buscaDoGuia = (nome: string) =>
+  `https://www.google.com/search?q=${encodeURIComponent(`${nome} trophy guide`)}`;
+
 // Tela do jogo: progresso, botão do guia, filtros e a lista de troféus.
 export default function Jogo({ id }: { id: string }) {
   const { jogo, trofeus, erro, recarregar } = useJogo(id);
@@ -69,7 +73,13 @@ export default function Jogo({ id }: { id: string }) {
         {jogo.guia_url ? (
           <a className="botao-primario" href={jogo.guia_url} target="_blank" rel="noopener noreferrer">Abrir guia</a>
         ) : (
-          <button type="button" className="botao-primario" disabled>Guia ainda não encontrado</button>
+          // Sem guia na PowerPyx: o servidor não consegue buscar na web (bloqueado), o celular consegue.
+          <>
+            <a className="botao-secundario" href={buscaDoGuia(jogo.nome)} target="_blank" rel="noopener noreferrer">
+              Procurar guia
+            </a>
+            <span className="fraco jogo-detalhe">Esse jogo não tem guia na PowerPyx. A busca abre no navegador.</span>
+          </>
         )}
       </section>
 
