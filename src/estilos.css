@@ -217,7 +217,22 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 
 .lista-trofeus { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .trofeu { display: flex; gap: 0.75rem; padding: 0.75rem; }
-.trofeu.feito { opacity: 0.6; }
+/* Conquistado (7.0 item 7): sem apagar; borda e selo verdes */
+.trofeu.feito { border-color: color-mix(in srgb, var(--sucesso) 35%, var(--borda)); }
+.trofeu-icone-caixa { position: relative; flex: none; align-self: flex-start; }
+.selo-conquistado {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sucesso);
+  color: var(--fundo);
+  border: 2px solid var(--superficie);
+}
 .trofeu-icone { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: var(--borda); }
 .trofeu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
 .trofeu-titulo { display: flex; align-items: center; gap: 0.45rem; }

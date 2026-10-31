@@ -176,10 +176,19 @@ export default function Jogo({ id }: { id: string }) {
 
 function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocarMissable: () => void }) {
   return (
+    // Conquistado (7.0 item 7): não fica mais apagado; ✓ verde no canto do ícone e a data na etiqueta.
     <li className={t.conquistado ? 'cartao trofeu feito' : 'cartao trofeu'}>
-      {t.icone_url
-        ? <img className="trofeu-icone" src={t.icone_url} alt="" width={48} height={48} loading="lazy" />
-        : <div className="trofeu-icone" />}
+      <div className="trofeu-icone-caixa">
+        {t.icone_url
+          ? <img className="trofeu-icone" src={t.icone_url} alt="" width={48} height={48} loading="lazy" />
+          : <div className="trofeu-icone" />}
+        {t.conquistado && (
+          <span className="selo-conquistado" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"
+              strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+        )}
+      </div>
       <div className="trofeu-info">
         <div className="trofeu-titulo">
           <span className={`tipo tipo-${t.tipo}`} title={TIPOS[t.tipo]} aria-label={TIPOS[t.tipo]} />
@@ -188,7 +197,7 @@ function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocar
         {t.descricao && <p className="trofeu-descricao">{t.descricao}</p>}
         <div className="etiquetas">
           {t.conquistado
-            ? <span className="etiqueta ok">✓ Conquistado{t.conquistado_em ? ` em ${new Date(t.conquistado_em).toLocaleDateString('pt-BR')}` : ''}</span>
+            ? <span className="etiqueta ok">✓ {t.conquistado_em ? new Date(t.conquistado_em).toLocaleDateString('pt-BR') : 'Conquistado'}</span>
             : <span className="etiqueta">Faltando</span>}
           {t.is_missable && <span className="etiqueta alerta">Missable</span>}
           {t.oculto && <span className="etiqueta">Oculto</span>}
