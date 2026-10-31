@@ -3,7 +3,7 @@
 -- Cria dois usuários de teste (sem senha) e age como cada um, do mesmo jeito que a API faz
 -- (papel "authenticated" + o id do usuário no token). No fim levanta um erro de propósito:
 -- o resultado sai na mensagem e TUDO é desfeito (nenhum usuário ou dado de teste fica no banco).
--- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "20 OK, 0 FALHOU".
+-- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "23 OK, 0 FALHOU".
 do $$
 declare
   u1 uuid := gen_random_uuid();  u2 uuid := gen_random_uuid();
@@ -35,6 +35,15 @@ begin
   begin insert into platinas.psn_auth (user_id, refresh_token, refresh_expira_em) values (u1, 'x', now());
     ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 gravou em psn_auth';
   exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 grava em psn_auth: recusado'; end;
+
+  -- Sync diária (tarefa 5.2): registro e senha só para o servidor.
+  begin perform count(*) from platinas.sync_log;
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 leu sync_log';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 lê sync_log: recusado'; end;
+
+  begin perform platinas.conferir_token_sync('x');
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 chamou conferir_token_sync';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 chama conferir_token_sync: recusado'; end;
 
   -- Usuário 2 tenta ler, alterar e apagar os dados do 1 ----------------------------------
   reset role;
@@ -86,7 +95,7 @@ begin
   reset role;
   perform set_config('request.jwt.claims', '', true);
   set local role anon;
-  foreach tab in array array['games', 'trophies', 'psn_auth'] loop
+  foreach tab in array array['games', 'trophies', 'psn_auth', 'sync_log'] loop
     begin execute format('select count(*) from platinas.%I', tab) into n;
       ruim := ruim + 1; r := r || ('FALHOU  visitante leu ' || tab);
     exception when insufficient_privilege then ok := ok + 1; r := r || ('OK      visitante lê ' || tab || ': recusado'); end;
