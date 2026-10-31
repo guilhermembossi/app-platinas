@@ -2,10 +2,12 @@
 // Sincronizar, tarefa 5.1) e pela psn-sync-diaria (tarefa 5.2).
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 import {
+  getProfileFromAccountId,
   getTitleTrophies,
   getTitleTrophyGroups,
   getUserTitles,
   getUserTrophiesEarnedForTitle,
+  getUserTrophyProfileSummary,
   type TrophyTitle,
 } from 'npm:psn-api@2.18.1';
 import { acharGuia } from './guia.ts';
@@ -106,8 +108,31 @@ export async function gravarJogo(
   return { id: jogo.id as string, trofeus, guia };
 }
 
-// Atualiza o progresso e os troféus dos jogos adicionados (todos, ou só `gameId`).
-// Uma busca da lista de títulos para todos; um jogo com erro não impede os outros.
+// Perfil PSN para a aba Resumo (7.0 item 3): números da conta inteira. "completos" = jogos da conta com 100%.
+async function gravarPerfil(admin: SupabaseClient, userId: string, acesso: Acesso, titulos: TrophyTitle[]) {
+  // O perfil não aceita "me": precisa do número da conta, que vem no resumo de troféus.
+  const resumo = await getUserTrophyProfileSummary(acesso, 'me');
+  const perfil = await getProfileFromAccountId(acesso, resumo.accountId);
+  // O maior avatar que a PSN tiver.
+  const avatar = [...perfil.avatars].sort((a, b) => parseInt(b.size) - parseInt(a.size))[0]?.url ?? null;
+  const { error } = await admin.from('psn_profile').upsert({
+    user_id: userId,
+    online_id: perfil.onlineId,
+    avatar_url: avatar,
+    nivel: Number(resumo.trophyLevel) || 0,
+    nivel_progresso: resumo.progress,
+    platinas: resumo.earnedTrophies.platinum,
+    completos: titulos.filter((t) => t.progress === 100).length,
+    ouro: resumo.earnedTrophies.gold,
+    prata: resumo.earnedTrophies.silver,
+    bronze: resumo.earnedTrophies.bronze,
+    atualizado_em: new Date().toISOString(),
+  });
+  if (error) throw new Error('falha ao gravar o perfil');
+}
+
+// Atualiza o progresso e os troféus dos jogos adicionados (todos, ou só `gameId`) e, sincronizando
+// todos, o perfil PSN. Uma busca da lista de títulos para tudo; um jogo com erro não impede os outros.
 export async function sincronizar(admin: SupabaseClient, userId: string, acesso: Acesso, gameId?: string) {
   let consulta = admin.from('games').select('id, np_communication_id').eq('user_id', userId);
   if (gameId) consulta = consulta.eq('id', gameId);
@@ -115,7 +140,16 @@ export async function sincronizar(admin: SupabaseClient, userId: string, acesso:
   if (error) throw new Error('falha ao ler os jogos');
   if (gameId && jogos.length === 0) return { status: 'nao_encontrado', atualizados: 0, falharam: 0 };
 
-  const titulos = new Map((await titulosDaConta(acesso)).map((t) => [t.npCommunicationId, t]));
+  const lista = await titulosDaConta(acesso);
+  const titulos = new Map(lista.map((t) => [t.npCommunicationId, t]));
+  if (!gameId) {
+    try {
+      await gravarPerfil(admin, userId, acesso, lista);
+    } catch (e) {
+      // Não impede a sincronização dos jogos. A mensagem é da PSN ou nossa ("falha ..."), sem tokens.
+      console.error('sync: perfil não atualizado:', e instanceof Error ? e.message.slice(0, 200) : '');
+    }
+  }
   let atualizados = 0;
   let falharam = 0;
   for (const jogo of jogos) {

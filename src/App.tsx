@@ -7,6 +7,7 @@ import Acesso from './telas/Acesso';
 import Inicio, { ROTA_ADICIONAR } from './telas/Inicio';
 import Adicionar from './telas/Adicionar';
 import Jogo, { ROTA_JOGO } from './telas/Jogo';
+import Resumo, { ROTA_RESUMO } from './telas/Resumo';
 
 export default function App() {
   const { carregando, sessao } = useSessao();
@@ -36,9 +37,26 @@ function Casca({ sessao }: { sessao: Session }) {
 
       <main className="conteudo">
         {hash === ROTA_ADICIONAR ? <Adicionar />
-          : hash.startsWith(ROTA_JOGO) ? <Jogo key={hash} id={hash.slice(ROTA_JOGO.length)} />
-            : <Inicio sessao={sessao} />}
+          : hash === ROTA_RESUMO ? <Resumo />
+            : hash.startsWith(ROTA_JOGO) ? <Jogo key={hash} id={hash.slice(ROTA_JOGO.length)} />
+              : <Inicio sessao={sessao} />}
       </main>
+
+      {/* Abas (7.0 item 3): Resumo só na própria aba; jogo e adicionar contam como "Meus jogos". */}
+      <nav className="abas" aria-label="Navegação principal">
+        <a className="aba" href="#/" aria-current={hash !== ROTA_RESUMO ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
+          <span>Meus jogos</span>
+        </a>
+        <a className="aba" href={ROTA_RESUMO} aria-current={hash === ROTA_RESUMO ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+          </svg>
+          <span>Resumo</span>
+        </a>
+      </nav>
     </div>
   );
 }

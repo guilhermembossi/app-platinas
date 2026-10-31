@@ -35,8 +35,49 @@ button { font: inherit; }
 .conteudo {
   max-width: 640px;
   margin: 0 auto;
-  padding: 1rem 1rem calc(env(safe-area-inset-bottom) + 2rem);
+  padding: 1rem 1rem calc(env(safe-area-inset-bottom) + 5.5rem); /* espaço para as abas */
 }
+
+/* Abas embaixo: Meus jogos | Resumo (7.0 item 3) */
+.abas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--superficie);
+  border-top: 1px solid var(--borda);
+}
+.aba {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 56px;
+  padding-top: 8px;
+  font-size: 0.75rem;
+  color: var(--textoFraco);
+  text-decoration: none;
+}
+.aba[aria-current='page'] { color: var(--primaria); font-weight: 600; }
+
+/* Resumo (7.0 item 3) */
+.perfil { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+.perfil-avatar { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--borda); border: 2px solid var(--primaria); }
+.perfil-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.perfil-id { font-weight: 800; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.destaques { list-style: none; margin: 0 0 0.75rem; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.destaque { display: flex; flex-direction: column; gap: 0.25rem; }
+.destaque-valor { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.destaque-nome { display: flex; align-items: center; gap: 0.4rem; color: var(--textoFraco); font-size: 0.9rem; }
+.secao-titulo { margin: 0 0 0.75rem; font-size: 1rem; }
+.por-tipo { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center; }
+.por-tipo li { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; font-size: 0.8rem; }
+.por-tipo-valor { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cartao + .jogo-detalhe, .destaques + .cartao + .jogo-detalhe { display: block; margin-top: 0.75rem; }
 
 .cartao {
   background: var(--superficie);

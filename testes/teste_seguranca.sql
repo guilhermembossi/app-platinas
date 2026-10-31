@@ -3,7 +3,7 @@
 -- Cria dois usuários de teste (sem senha) e age como cada um, do mesmo jeito que a API faz
 -- (papel "authenticated" + o id do usuário no token). No fim levanta um erro de propósito:
 -- o resultado sai na mensagem e TUDO é desfeito (nenhum usuário ou dado de teste fica no banco).
--- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "25 OK, 0 FALHOU".
+-- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "29 OK, 0 FALHOU".
 do $$
 declare
   u1 uuid := gen_random_uuid();  u2 uuid := gen_random_uuid();
@@ -44,6 +44,11 @@ begin
   begin perform platinas.conferir_token_sync('x');
     ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 chamou conferir_token_sync';
   exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 chama conferir_token_sync: recusado'; end;
+
+  -- Perfil PSN (7.0 item 3): só o servidor grava; o dono lê o seu.
+  begin insert into platinas.psn_profile (user_id, online_id) values (u1, 'x');
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 gravou em psn_profile';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 grava em psn_profile: recusado'; end;
 
   -- Usuário 2 tenta ler, alterar e apagar os dados do 1 ----------------------------------
   reset role;
@@ -95,7 +100,7 @@ begin
   reset role;
   perform set_config('request.jwt.claims', '', true);
   set local role anon;
-  foreach tab in array array['games', 'trophies', 'psn_auth', 'sync_log'] loop
+  foreach tab in array array['games', 'trophies', 'psn_auth', 'sync_log', 'psn_profile'] loop
     begin execute format('select count(*) from platinas.%I', tab) into n;
       ruim := ruim + 1; r := r || ('FALHOU  visitante leu ' || tab);
     exception when insufficient_privilege then ok := ok + 1; r := r || ('OK      visitante lê ' || tab || ': recusado'); end;
@@ -109,6 +114,7 @@ begin
   if n = 1 then ok := ok + 1; r := r || text 'OK      servidor grava e lê psn_auth';
   else ruim := ruim + 1; r := r || text 'FALHOU  servidor não leu psn_auth'; end if;
   insert into platinas.sync_log (origem, user_id, status) values ('manual', u1, 'token_expirado');
+  insert into platinas.psn_profile (user_id, online_id) values (u1, 'Perfil do 1');
 
   -- Usuário 2 não vê o registro do 1 (tarefa 5.3) --------------------------------------
   reset role;
@@ -117,6 +123,9 @@ begin
   select count(*) from platinas.sync_log where user_id = u1 into n;
   if n = 0 then ok := ok + 1; r := r || text 'OK      usuário 2 lê sync_log do 1: 0 linhas';
   else ruim := ruim + 1; r := r || ('FALHOU  usuário 2 lê ' || n || ' linhas do sync_log do 1'); end if;
+  select count(*) from platinas.psn_profile where user_id = u1 into n;
+  if n = 0 then ok := ok + 1; r := r || text 'OK      usuário 2 lê psn_profile do 1: 0 linhas';
+  else ruim := ruim + 1; r := r || text 'FALHOU  usuário 2 leu o psn_profile do 1'; end if;
 
   -- Usuário 1 confere que nada dele mudou ------------------------------------------------
   reset role;
@@ -130,6 +139,9 @@ begin
   select count(*) from platinas.sync_log where user_id = u1 into n;
   if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 lê o próprio sync_log';
   else ruim := ruim + 1; r := r || ('FALHOU  usuário 1 lê ' || n || ' linhas do próprio sync_log (esperado 1)'); end if;
+  select count(*) from platinas.psn_profile where user_id = u1 into n;
+  if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 lê o próprio psn_profile';
+  else ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 não leu o próprio psn_profile'; end if;
 
   reset role;
   raise exception '%', E'RESULTADO (tudo desfeito, nada fica no banco)\n'
