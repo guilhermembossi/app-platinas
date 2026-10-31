@@ -60,5 +60,19 @@ export function useJogo(id: string) {
     return () => { ativo = false; };
   }, [id, tentativa]);
 
-  return { jogo, trofeus, erro, recarregar: () => setTentativa((n) => n + 1) };
+  // Marca/desmarca missable à mão (tarefa 4.4). Muda na tela na hora e volta atrás se o banco recusar.
+  // Origem "manual" nos dois casos: a sincronização nunca mexe nesses campos.
+  async function alterarMissable(trofeuId: string, valor: boolean): Promise<boolean> {
+    const trocar = (v: boolean) =>
+      setTrofeus((ts) => ts.map((t) => (t.id === trofeuId ? { ...t, is_missable: v } : t)));
+    trocar(valor);
+    const { error } = await supabase
+      .from('trophies')
+      .update({ is_missable: valor, missable_origem: 'manual' })
+      .eq('id', trofeuId);
+    if (error) trocar(!valor);
+    return !error;
+  }
+
+  return { jogo, trofeus, erro, recarregar: () => setTentativa((n) => n + 1), alterarMissable };
 }

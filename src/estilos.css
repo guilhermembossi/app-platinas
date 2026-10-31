@@ -139,6 +139,20 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .etiqueta.ok { border-color: var(--sucesso); color: var(--sucesso); }
 .etiqueta.alerta { border-color: var(--erro); color: var(--erro); font-weight: 600; }
 
+/* Marcar missable à mão (4.4): toque grande, mas discreto quando desmarcado */
+.botao-missable {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 0 0.75rem;
+  border: 1px dashed var(--borda);
+  border-radius: 999px;
+  background: none;
+  color: var(--textoFraco);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.botao-missable.marcado { border: 1px solid var(--erro); color: var(--erro); font-weight: 700; }
+
 /* Adicionar jogo */
 .busca { display: flex; gap: 0.5rem; }
 .busca input {

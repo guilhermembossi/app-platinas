@@ -24,8 +24,14 @@ const buscaDoGuia = (nome: string) =>
 
 // Tela do jogo: progresso, botão do guia, filtros e a lista de troféus.
 export default function Jogo({ id }: { id: string }) {
-  const { jogo, trofeus, erro, recarregar } = useJogo(id);
+  const { jogo, trofeus, erro, recarregar, alterarMissable } = useJogo(id);
   const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [erroMissable, setErroMissable] = useState(false);
+
+  async function trocarMissable(t: Trofeu) {
+    setErroMissable(false);
+    if (!(await alterarMissable(t.id, !t.is_missable))) setErroMissable(true);
+  }
 
   if (erro) {
     return (
@@ -92,18 +98,20 @@ export default function Jogo({ id }: { id: string }) {
         ))}
       </div>
 
+      {erroMissable && <p className="mensagem erro" role="alert">Não deu para salvar o missable. Tente de novo.</p>}
+
       {lista.length === 0 ? (
         <div className="cartao vazio"><p>{VAZIO[filtro]}</p></div>
       ) : (
         <ul className="lista-trofeus">
-          {lista.map((t) => <LinhaTrofeu key={t.id} trofeu={t} />)}
+          {lista.map((t) => <LinhaTrofeu key={t.id} trofeu={t} aoTrocarMissable={() => trocarMissable(t)} />)}
         </ul>
       )}
     </>
   );
 }
 
-function LinhaTrofeu({ trofeu: t }: { trofeu: Trofeu }) {
+function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocarMissable: () => void }) {
   return (
     <li className={t.conquistado ? 'cartao trofeu feito' : 'cartao trofeu'}>
       {t.icone_url
@@ -119,9 +127,12 @@ function LinhaTrofeu({ trofeu: t }: { trofeu: Trofeu }) {
           {t.conquistado
             ? <span className="etiqueta ok">✓ Conquistado{t.conquistado_em ? ` em ${new Date(t.conquistado_em).toLocaleDateString('pt-BR')}` : ''}</span>
             : <span className="etiqueta">Faltando</span>}
-          {t.is_missable && <span className="etiqueta alerta">Missable</span>}
           {t.oculto && <span className="etiqueta">Oculto</span>}
         </div>
+        <button type="button" className={t.is_missable ? 'botao-missable marcado' : 'botao-missable'}
+          aria-pressed={t.is_missable} onClick={aoTrocarMissable}>
+          {t.is_missable ? '⚠ Missable · desmarcar' : 'Marcar como missable'}
+        </button>
       </div>
     </li>
   );
