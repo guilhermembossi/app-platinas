@@ -36,7 +36,7 @@ export async function sincronizarJogos(gameId?: string): Promise<{ atualizados: 
 }
 
 const MENSAGENS: Record<string, string> = {
-  token_expirado: 'O acesso à PSN venceu. Gere um NPSSO novo e salve no Supabase.',
+  token_expirado: 'O acesso à PSN venceu. O passo a passo para renovar está na tela inicial.',
   nao_encontrado: 'Esse jogo não está mais na sua conta PSN.',
   termo_curto: 'Digite pelo menos 2 letras.',
   sem_login: 'Sua sessão terminou. Entre de novo.',

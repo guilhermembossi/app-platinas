@@ -1,6 +1,8 @@
 import type { Session } from '@supabase/supabase-js';
 import { quando, useJogos, type Jogo } from '../dados/jogos';
 import { supabase } from '../supabase';
+import { useTokenVencido } from '../dados/estadoPsn';
+import AvisoToken from '../componentes/AvisoToken';
 import BotaoSincronizar from '../componentes/BotaoSincronizar';
 import { ROTA_JOGO } from './Jogo';
 
@@ -9,6 +11,7 @@ export const ROTA_ADICIONAR = '#/adicionar';
 // Tela inicial: os jogos adicionados com ícone, % e barra, e a última sincronização de cada um.
 export default function Inicio({ sessao }: { sessao: Session }) {
   const { jogos, erro, recarregar } = useJogos();
+  const { vencido, conferir } = useTokenVencido();
 
   return (
     <>
@@ -16,7 +19,8 @@ export default function Inicio({ sessao }: { sessao: Session }) {
         <h1>Meus jogos</h1>
         <a className="botao-primario botao-pequeno" href={ROTA_ADICIONAR}>+ Adicionar jogo</a>
       </div>
-      {jogos && jogos.length > 0 && <BotaoSincronizar aoTerminar={recarregar} />}
+      {vencido && <AvisoToken />}
+      {jogos && jogos.length > 0 && <BotaoSincronizar aoTerminar={() => { recarregar(); conferir(); }} />}
 
       {erro ? (
         <div className="cartao vazio">

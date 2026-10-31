@@ -3,7 +3,7 @@
 -- Cria dois usuários de teste (sem senha) e age como cada um, do mesmo jeito que a API faz
 -- (papel "authenticated" + o id do usuário no token). No fim levanta um erro de propósito:
 -- o resultado sai na mensagem e TUDO é desfeito (nenhum usuário ou dado de teste fica no banco).
--- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "23 OK, 0 FALHOU".
+-- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "25 OK, 0 FALHOU".
 do $$
 declare
   u1 uuid := gen_random_uuid();  u2 uuid := gen_random_uuid();
@@ -36,10 +36,10 @@ begin
     ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 gravou em psn_auth';
   exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 grava em psn_auth: recusado'; end;
 
-  -- Sync diária (tarefa 5.2): registro e senha só para o servidor.
-  begin perform count(*) from platinas.sync_log;
-    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 leu sync_log';
-  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 lê sync_log: recusado'; end;
+  -- Sync diária (5.2): só o servidor grava o registro e confere a senha. Desde a 5.3 o dono lê o próprio registro.
+  begin insert into platinas.sync_log (origem, user_id, status) values ('manual', u1, 'ok');
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 gravou em sync_log';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 grava em sync_log: recusado'; end;
 
   begin perform platinas.conferir_token_sync('x');
     ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 chamou conferir_token_sync';
@@ -108,6 +108,15 @@ begin
   select count(*) from platinas.psn_auth where user_id = u1 into n;
   if n = 1 then ok := ok + 1; r := r || text 'OK      servidor grava e lê psn_auth';
   else ruim := ruim + 1; r := r || text 'FALHOU  servidor não leu psn_auth'; end if;
+  insert into platinas.sync_log (origem, user_id, status) values ('manual', u1, 'token_expirado');
+
+  -- Usuário 2 não vê o registro do 1 (tarefa 5.3) --------------------------------------
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', u2, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  select count(*) from platinas.sync_log where user_id = u1 into n;
+  if n = 0 then ok := ok + 1; r := r || text 'OK      usuário 2 lê sync_log do 1: 0 linhas';
+  else ruim := ruim + 1; r := r || ('FALHOU  usuário 2 lê ' || n || ' linhas do sync_log do 1'); end if;
 
   -- Usuário 1 confere que nada dele mudou ------------------------------------------------
   reset role;
@@ -117,6 +126,10 @@ begin
        + (select count(*) from platinas.trophies where nome = 'Platina do 1' and game_id = g1) into n;
   if n = 2 then ok := ok + 1; r := r || text 'OK      usuário 1 continua com jogo e troféu intactos';
   else ruim := ruim + 1; r := r || ('FALHOU  usuário 1 agora vê ' || n || ' registros'); end if;
+
+  select count(*) from platinas.sync_log where user_id = u1 into n;
+  if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 lê o próprio sync_log';
+  else ruim := ruim + 1; r := r || ('FALHOU  usuário 1 lê ' || n || ' linhas do próprio sync_log (esperado 1)'); end if;
 
   reset role;
   raise exception '%', E'RESULTADO (tudo desfeito, nada fica no banco)\n'

@@ -3,6 +3,7 @@
 // POST { acao: "buscar", termo }                    → { jogos: [...] }
 // POST { acao: "adicionar", np_communication_id }   → { jogo: {...} } (e procura o guia, tarefa 4.1)
 // POST { acao: "sincronizar", game_id? }            → { atualizados, falharam } (tarefa 5.1)
+// Sincronizar e token vencido ficam em platinas.sync_log (origem "manual"), que o app lê (5.3).
 // Nunca devolve nem registra tokens. A gravação fica em _shared/sync.ts.
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { cabecalhosCors } from '../_shared/cors.ts';
@@ -105,11 +106,18 @@ async function atender(req: Request): Promise<Response> {
     }
     if (corpo.acao === 'sincronizar') {
       const r = await sincronizar(admin, user.id, acesso, corpo.game_id);
+      if (r.status === 'ok') {
+        await admin.from('sync_log').insert({ origem: 'manual', user_id: user.id, ...r });
+      }
       return resposta(r, r.status === 'nao_encontrado' ? 404 : 200);
     }
     return resposta({ status: 'pedido_invalido' }, 400);
   } catch (e) {
-    if (e instanceof PsnTokenExpirado) return resposta({ status: 'token_expirado' }, 401);
+    // Token vencido fica no registro: é ele que faz o app mostrar o aviso (tarefa 5.3).
+    if (e instanceof PsnTokenExpirado) {
+      await admin.from('sync_log').insert({ origem: 'manual', user_id: user.id, status: 'token_expirado' });
+      return resposta({ status: 'token_expirado' }, 401);
+    }
     console.error('psn-jogos: erro interno', e instanceof Error && e.message.startsWith('falha') ? e.message : '');
     return resposta({ status: 'erro' }, 500);
   }

@@ -15,11 +15,11 @@ export default function BotaoSincronizar({ gameId, aoTerminar }: { gameId?: stri
       if (falharam > 0) {
         setAviso({ erro: true, texto: `${falharam} jogo${falharam > 1 ? 's' : ''} não sincronizou. Tente de novo.` });
       }
-      aoTerminar();
     } catch (err) {
       setAviso({ erro: true, texto: mensagemPsn(err) });
     } finally {
       setSincronizando(false);
+      aoTerminar(); // também no erro: o início confere de novo se o token venceu (5.3)
     }
   }
 
