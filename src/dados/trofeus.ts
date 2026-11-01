@@ -15,7 +15,17 @@ export type Trofeu = {
   conquistado: boolean;
   conquistado_em: string | null;
   is_missable: boolean;
+  raridade_pct: number | null;
 };
+
+// Raridade (7.0 item 10): faixas da PSN pelo % dos jogadores que têm o troféu. A classe dá a cor.
+export function raridade(pct: number | null): { nome: string; classe: string } | null {
+  if (pct == null) return null;
+  if (pct < 5) return { nome: 'Ultra raro', classe: 'ultra-raro' };
+  if (pct < 15) return { nome: 'Muito raro', classe: 'muito-raro' };
+  if (pct < 50) return { nome: 'Raro', classe: 'raro' };
+  return { nome: 'Comum', classe: 'comum' };
+}
 
 export type DetalheJogo = {
   id: string;
@@ -64,7 +74,7 @@ export function useJogo(id: string) {
         .select('id, nome, plataforma, icone_url, progresso_pct, guia_url, ultima_sync, grupos, platinado')
         .eq('id', id).maybeSingle(),
       supabase.from('trophies')
-        .select('id, trophy_id, grupo_id, nome, descricao, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable')
+        .select('id, trophy_id, grupo_id, nome, descricao, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable, raridade_pct')
         .eq('game_id', id).order('trophy_id'),
     ]).then(([g, t]) => {
       if (!ativo) return;

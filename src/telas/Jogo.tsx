@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { plataformaLegivel, quando } from '../dados/jogos';
-import { filtrar, GRUPO_BASE, porBloco, useJogo, type Filtro, type Grupo, type Trofeu } from '../dados/trofeus';
+import { filtrar, GRUPO_BASE, porBloco, raridade, useJogo, type Filtro, type Grupo, type Trofeu } from '../dados/trofeus';
 import BotaoSincronizar from '../componentes/BotaoSincronizar';
 import BotaoVoltar from '../componentes/BotaoVoltar';
 
@@ -175,6 +175,7 @@ export default function Jogo({ id }: { id: string }) {
 }
 
 function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocarMissable: () => void }) {
+  const rar = raridade(t.raridade_pct);
   return (
     // Conquistado (7.0 item 7): não fica mais apagado; ✓ verde no canto do ícone e a data na etiqueta.
     <li className={t.conquistado ? 'cartao trofeu feito' : 'cartao trofeu'}>
@@ -199,6 +200,11 @@ function LinhaTrofeu({ trofeu: t, aoTrocarMissable }: { trofeu: Trofeu; aoTrocar
           {t.conquistado
             ? <span className="etiqueta ok">✓ {t.conquistado_em ? new Date(t.conquistado_em).toLocaleDateString('pt-BR') : 'Conquistado'}</span>
             : <span className="etiqueta">Faltando</span>}
+          {rar && (
+            <span className={`etiqueta raridade ${rar.classe}`}>
+              {rar.nome} · {t.raridade_pct!.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%
+            </span>
+          )}
           {t.is_missable && <span className="etiqueta alerta">Missable</span>}
           {t.oculto && <span className="etiqueta">Oculto</span>}
         </div>

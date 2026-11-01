@@ -250,6 +250,10 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .etiqueta.ok { border-color: var(--sucesso); color: var(--sucesso); }
 .etiqueta.alerta { border-color: var(--erro); color: var(--erro); font-weight: 600; }
 .etiqueta.platina { border-color: var(--platina); color: var(--platina); font-weight: 600; }
+/* Raridade (7.0 item 10): mesmas cores dos troféus, do mais raro ao comum. */
+.etiqueta.raridade.ultra-raro { border-color: var(--platina); color: var(--platina); font-weight: 600; }
+.etiqueta.raridade.muito-raro { border-color: var(--ouro); color: var(--ouro); }
+.etiqueta.raridade.raro { border-color: var(--prata); color: var(--prata); }
 
 /* Platina × 100% e blocos da PSN (7.0 item 1) */
 .metas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }

@@ -97,6 +97,8 @@ export async function gravarJogo(
       oculto: t.trophyHidden,
       conquistado: g?.earned ?? false,
       conquistado_em: g?.earned ? g.earnedDateTime ?? null : null,
+      // % dos jogadores da PSN que têm o troféu (7.0 item 10); vem como texto ("4.1").
+      raridade_pct: g?.trophyEarnedRate != null && !isNaN(Number(g.trophyEarnedRate)) ? Number(g.trophyEarnedRate) : null,
     };
   });
   const { error: erroTrofeus } = await admin.from('trophies').upsert(trofeus, { onConflict: 'game_id,trophy_id' });
