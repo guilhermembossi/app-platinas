@@ -9,8 +9,9 @@ export type Paleta = {
   texto: string;
   textoFraco: string;  // textos secundários
   borda: string;
-  primaria: string;    // botões principais
+  primaria: string;    // fundo dos botões principais (azul PS)
   sobrePrimaria: string; // texto em cima da cor primária
+  destaque: string;    // azul claro para texto, links, barras e foco sobre o fundo escuro (contraste)
   sucesso: string;
   erro: string;        // mensagens de erro
   platina: string;     // cores dos tipos de troféu
@@ -25,23 +26,25 @@ export const marca = {
   nomeCurto: 'Platinas',
   descricao: 'Suas platinas da PSN: troféus, progresso, missables e guia.',
   idioma: 'pt-BR',
-  // Só tema escuro (decisão da arquitetura).
+  // Só tema escuro. Visual PlayStation (7.0 item 9): cores da arquitetura e da prévia aprovada,
+  // sem logo nem símbolos da Sony.
   cores: {
-    fundo: '#0b0e14',
-    superficie: '#151a24',
-    texto: '#e8ecf4',
-    textoFraco: '#94a0b4',
-    borda: '#252c3a',
-    primaria: '#8ab4ff',
-    sobrePrimaria: '#0b1324',
-    sucesso: '#4ade80',
-    erro: '#fb923c',
-    platina: '#a8c4ff',
-    ouro: '#e5b84b',
+    fundo: '#0a0f1a',
+    superficie: '#161a21',
+    texto: '#eef1f5',
+    textoFraco: '#a3acb9',
+    borda: '#2a303a',
+    primaria: '#0070d1',
+    sobrePrimaria: '#ffffff',
+    destaque: '#3d9bff',
+    sucesso: '#5fcb8a',
+    erro: '#f0a04b',
+    platina: '#9fc3e6',
+    ouro: '#e2b04a',
     prata: '#b8c0cc',
-    bronze: '#c58a5a',
+    bronze: '#c9835a',
   } satisfies Paleta,
-  icone: { fundo: '#1e2a44', desenho: '#cfdcff' },
+  icone: { fundo: '#0070d1', desenho: '#ffffff' },
 };
 
 // Logo: troféu. `cantos` = false para os ícones que o próprio sistema arredonda (iPhone, maskable).

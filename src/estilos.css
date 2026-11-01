@@ -62,7 +62,7 @@ button { font: inherit; }
   color: var(--textoFraco);
   text-decoration: none;
 }
-.aba[aria-current='page'] { color: var(--primaria); font-weight: 600; }
+.aba[aria-current='page'] { color: var(--destaque); font-weight: 600; }
 
 /* Resumo (7.0 item 3) */
 .perfil { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
@@ -106,9 +106,9 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
   justify-content: center;
   width: 100%;
   min-height: 48px;
-  border: 1px solid var(--primaria);
+  border: 1px solid var(--destaque);
   border-radius: 12px;
-  color: var(--primaria);
+  color: var(--destaque);
   font-weight: 700;
   text-decoration: none;
 }
@@ -118,7 +118,7 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
   border: 0;
   background: none;
   padding: 0.5rem 0;
-  color: var(--primaria);
+  color: var(--destaque);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -140,7 +140,7 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
   text-decoration: none;
   cursor: pointer;
 }
-.botao-redondo:active { border-color: var(--primaria); }
+.botao-redondo:active { border-color: var(--destaque); }
 .botao-redondo:disabled { cursor: default; }
 .botao-redondo.girando svg { animation: girar 1s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
@@ -157,7 +157,7 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .aviso-token { border-color: var(--erro); margin-bottom: 1rem; }
 .aviso-token h2 { margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--erro); }
 .aviso-token ol { margin: 0 0 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; line-height: 1.4; }
-.aviso-token a { color: var(--primaria); }
+.aviso-token a { color: var(--destaque); }
 .aviso-token code { font-size: 0.85em; background: var(--fundo); padding: 0.05rem 0.3rem; border-radius: 4px; }
 
 /* Tela inicial */
@@ -175,17 +175,17 @@ a.botao-primario { display: inline-flex; align-items: center; justify-content: c
 .jogo-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
 .jogo-nome { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .jogo-pct { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
-.jogo-pct.platinado { color: var(--primaria); }
+.jogo-pct.platinado { color: var(--destaque); }
 .jogo-detalhe { font-size: 0.8rem; }
 
 .barra-progresso { height: 8px; border-radius: 4px; background: var(--borda); overflow: hidden; }
-.barra-progresso > div { height: 100%; border-radius: 4px; background: var(--primaria); }
+.barra-progresso > div { height: 100%; border-radius: 4px; background: var(--destaque); }
 
 .jogo-link { color: inherit; text-decoration: none; }
 
 /* Card de "Meus jogos": link do jogo + estrela à direita (7.0 item 2) */
 .cartao-jogo { display: flex; align-items: center; padding: 0; }
-.cartao-jogo:active { border-color: var(--primaria); }
+.cartao-jogo:active { border-color: var(--destaque); }
 .cartao-jogo .jogo-link { flex: 1; min-width: 0; }
 .estrela {
   order: 2;
@@ -306,7 +306,7 @@ details:not([open]) > .bloco-titulo { margin-bottom: 0; }
 .passo-marca { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; font-size: 0.75rem; font-weight: 800; background: var(--borda); }
 .passo-feito .passo-marca { background: var(--sucesso); color: var(--fundo); }
 .passo-aviso .passo-marca { background: var(--erro); color: var(--fundo); }
-.passo-agora .passo-marca { border: 2px solid var(--primaria); border-top-color: transparent; background: none; animation: girar 0.9s linear infinite; }
+.passo-agora .passo-marca { border: 2px solid var(--destaque); border-top-color: transparent; background: none; animation: girar 0.9s linear infinite; }
 .passo-depois { color: var(--textoFraco); }
 .passos-acoes { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 @media (prefers-reduced-motion: reduce) { .passo-agora .passo-marca { animation: none; } }
@@ -325,7 +325,7 @@ details:not([open]) > .bloco-titulo { margin-bottom: 0; }
   background: var(--superficie);
   color: var(--texto);
 }
-.busca input:focus { outline: 2px solid var(--primaria); outline-offset: 0; border-color: transparent; }
+.busca input:focus { outline: 2px solid var(--destaque); outline-offset: 0; border-color: transparent; }
 .dica-busca { font-size: 0.8rem; margin: 0.5rem 0 1rem; }
 .lista-jogos .botao-pequeno { flex: none; }
 .mensagem.erro + .lista-jogos, .busca + .mensagem { margin-top: 0.75rem; }
@@ -358,7 +358,7 @@ details:not([open]) > .bloco-titulo { margin-bottom: 0; }
   background: var(--fundo);
   color: var(--texto);
 }
-.formulario input:focus { outline: 2px solid var(--primaria); outline-offset: 0; border-color: transparent; }
+.formulario input:focus { outline: 2px solid var(--destaque); outline-offset: 0; border-color: transparent; }
 
 .mensagem { margin: 0; padding: 0.75rem; border-radius: 10px; font-size: 0.9rem; border: 1px solid var(--borda); }
 .mensagem.erro { border-color: var(--erro); color: var(--erro); }
