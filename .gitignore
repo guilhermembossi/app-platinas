@@ -6,3 +6,7 @@ dist/
 *.local
 .DS_Store
 Thumbs.db
+# Anotações para o Claude Code: ficam só no PC
+CLAUDE.md
+CLAUDE.local.md
+.claude/
