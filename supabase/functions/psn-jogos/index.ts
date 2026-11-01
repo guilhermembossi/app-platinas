@@ -1,12 +1,15 @@
 // Tarefa 2.3: buscar jogos entre os títulos da conta PSN e adicionar um jogo
 // (jogo + todos os troféus em PT e EN + o progresso do Guilherme).
 // POST { acao: "buscar", termo }                    → { jogos: [...] }
-// POST { acao: "adicionar", np_communication_id }   → { jogo: {...} } (e procura o guia, tarefa 4.1)
+// POST { acao: "adicionar", np_communication_id, sem_guia? } → { jogo: {...} } (e procura o guia, 4.1,
+//      a não ser com sem_guia: o app pede o guia depois, para mostrar os passos, 7.0 item 8)
+// POST { acao: "guia", game_id }                    → { guia } (procura o guia de um jogo já adicionado)
 // POST { acao: "sincronizar", game_id? }            → { atualizados, falharam } (tarefa 5.1)
 // Sincronizar e token vencido ficam em platinas.sync_log (origem "manual"), que o app lê (5.3).
 // Nunca devolve nem registra tokens. A gravação fica em _shared/sync.ts.
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { cabecalhosCors } from '../_shared/cors.ts';
+import { acharGuia } from '../_shared/guia.ts';
 import { obterAcessoPsn, PsnTokenExpirado } from '../_shared/psn.ts';
 import { type Acesso, gravarJogo, sincronizar, titulosDaConta } from '../_shared/sync.ts';
 
@@ -45,12 +48,12 @@ async function buscar(admin: SupabaseClient, userId: string, acesso: Acesso, ter
   });
 }
 
-async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, npId: string) {
+async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, npId: string, comGuia: boolean) {
   // Só jogos que estão na conta: o título também traz nome, ícone, plataforma e o % da PSN.
   const titulo = (await titulosDaConta(acesso)).find((t) => t.npCommunicationId === npId);
   if (!titulo) return resposta({ status: 'nao_encontrado' }, 404);
 
-  const { id, trofeus, guia } = await gravarJogo(admin, userId, acesso, titulo, true);
+  const { id, trofeus, guia } = await gravarJogo(admin, userId, acesso, titulo, comGuia);
   const conquistados = trofeus.filter((t) => t.conquistado).length;
   return resposta({
     status: 'ok',
@@ -72,6 +75,18 @@ async function adicionar(admin: SupabaseClient, userId: string, acesso: Acesso, 
   });
 }
 
+// Passo "guia" do Adicionar (7.0 item 8): o app adiciona sem guia e pede o guia em seguida, para mostrar
+// cada passo quando ele termina. Só procura se o jogo ainda não tem; não precisa falar com a PSN.
+async function procurarGuia(admin: SupabaseClient, userId: string, gameId: string) {
+  const { data: jogo } = await admin.from('games').select('id, nome, guia_url, guia_fonte')
+    .eq('id', gameId).eq('user_id', userId).maybeSingle();
+  if (!jogo) return resposta({ status: 'nao_encontrado' }, 404);
+  if (jogo.guia_url) return resposta({ status: 'ok', guia: { url: jogo.guia_url, fonte: jogo.guia_fonte } });
+  const achado = await acharGuia(jogo.nome);
+  if (achado) await admin.from('games').update({ guia_url: achado.url, guia_fonte: achado.fonte }).eq('id', jogo.id);
+  return resposta({ status: 'ok', guia: achado });
+}
+
 // Toda resposta leva os cabeçalhos de CORS (o app chama do navegador, tarefa 3.3).
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cabecalhosCors(req) });
@@ -90,7 +105,7 @@ async function atender(req: Request): Promise<Response> {
   const { data: { user } } = await admin.auth.getUser(jwt);
   if (!user) return resposta({ status: 'sem_login' }, 401);
 
-  let corpo: { acao?: string; termo?: string; np_communication_id?: string; game_id?: string };
+  let corpo: { acao?: string; termo?: string; np_communication_id?: string; game_id?: string; sem_guia?: boolean };
   try {
     corpo = await req.json();
   } catch {
@@ -98,11 +113,12 @@ async function atender(req: Request): Promise<Response> {
   }
 
   try {
+    if (corpo.acao === 'guia' && corpo.game_id) return await procurarGuia(admin, user.id, corpo.game_id);
     const { accessToken } = await obterAcessoPsn(admin, user.id);
     const acesso = { accessToken };
     if (corpo.acao === 'buscar') return await buscar(admin, user.id, acesso, corpo.termo ?? '');
     if (corpo.acao === 'adicionar' && corpo.np_communication_id) {
-      return await adicionar(admin, user.id, acesso, corpo.np_communication_id);
+      return await adicionar(admin, user.id, acesso, corpo.np_communication_id, !corpo.sem_guia);
     }
     if (corpo.acao === 'sincronizar') {
       const r = await sincronizar(admin, user.id, acesso, corpo.game_id);

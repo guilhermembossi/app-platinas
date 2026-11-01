@@ -297,6 +297,20 @@ details:not([open]) > .bloco-titulo { margin-bottom: 0; }
 }
 .bandeira.marcada { color: var(--erro); }
 
+/* Passos do Adicionar (7.0 item 8) */
+.resultado { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem; }
+.resultado .jogo { padding: 0; }
+.passos { border-top: 1px solid var(--borda); padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.passos ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.passo { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; }
+.passo-marca { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; font-size: 0.75rem; font-weight: 800; background: var(--borda); }
+.passo-feito .passo-marca { background: var(--sucesso); color: var(--fundo); }
+.passo-aviso .passo-marca { background: var(--erro); color: var(--fundo); }
+.passo-agora .passo-marca { border: 2px solid var(--primaria); border-top-color: transparent; background: none; animation: girar 0.9s linear infinite; }
+.passo-depois { color: var(--textoFraco); }
+.passos-acoes { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { .passo-agora .passo-marca { animation: none; } }
+
 /* Adicionar jogo */
 .busca { display: flex; gap: 0.5rem; }
 .busca input {
