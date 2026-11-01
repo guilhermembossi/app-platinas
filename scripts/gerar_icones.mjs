@@ -6,7 +6,7 @@ import { marca, logoSvg } from '../src/config/marca.ts';
 
 const pasta = new URL('../public/icones/', import.meta.url);
 mkdirSync(pasta, { recursive: true });
-const { fundo, desenho } = marca.icone;
+const { fundo, metal } = marca.icone;
 
 const icones = [
   ['icone-192.png', 192, true],
@@ -15,8 +15,8 @@ const icones = [
   ['apple-touch-icon.png', 180, false],
 ];
 for (const [nome, lado, cantos] of icones) {
-  await sharp(Buffer.from(logoSvg(fundo, desenho, cantos))).resize(lado, lado).png().toFile(fileURLToPath(new URL(nome, pasta)));
+  await sharp(Buffer.from(logoSvg(fundo, metal, cantos))).resize(lado, lado).png().toFile(fileURLToPath(new URL(nome, pasta)));
   console.log('ok', nome);
 }
-writeFileSync(new URL('icone.svg', pasta), logoSvg(fundo, desenho, true));
+writeFileSync(new URL('icone.svg', pasta), logoSvg(fundo, metal, true));
 console.log('ok icone.svg');

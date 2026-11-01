@@ -44,20 +44,27 @@ export const marca = {
     prata: '#b8c0cc',
     bronze: '#c9835a',
   } satisfies Paleta,
-  icone: { fundo: '#0070d1', desenho: '#ffffff' },
+  // Ícone (escolha do Guilherme, 31/10/2026, versão A): o troféu original do app em cor de platina
+  // com brilho metálico, no fundo escuro. Desenho próprio, nada da Sony.
+  icone: { fundo: '#0a0f1a', metal: ['#f4f9ff', '#9fc3e6', '#cfe2f5', '#7d9dbd'] },
 };
 
-// Logo: troféu. `cantos` = false para os ícones que o próprio sistema arredonda (iPhone, maskable).
-export function logoSvg(fundo: string, desenho: string, cantos = true): string {
+// Logo: troféu com degradê metálico (`metal` = cores do degradê, do claro ao escuro) e um reflexo.
+// `cantos` = false para os ícones que o próprio sistema arredonda (iPhone, maskable).
+export function logoSvg(fundo: string, metal: string[], cantos = true): string {
+  const paradas = [0, 0.45, 0.7, 1].map((p, i) => `<stop offset="${p}" stop-color="${metal[i]}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">`
+    + `<defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">${paradas}</linearGradient></defs>`
     + `<rect width="512" height="512" rx="${cantos ? 112 : 0}" fill="${fundo}"/>`
-    + `<g fill="none" stroke="${desenho}" stroke-width="22" stroke-linecap="round">`
+    + `<g fill="none" stroke="url(#metal)" stroke-width="22" stroke-linecap="round">`
     + `<path d="M176 156h-36v20c0 34 22 60 52 64"/>`
     + `<path d="M336 156h36v20c0 34-22 60-52 64"/>`
     + `</g>`
-    + `<g fill="${desenho}">`
+    + `<g fill="url(#metal)">`
     + `<path d="M168 120h176v84c0 58-39 104-88 104s-88-46-88-104z"/>`
     + `<rect x="238" y="300" width="36" height="52"/>`
     + `<rect x="184" y="348" width="144" height="40" rx="10"/>`
-    + `</g></svg>`;
+    + `</g>`
+    + `<path d="M196 140v56c0 24 10 46 28 60" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="12" stroke-linecap="round"/>`
+    + `</svg>`;
 }
