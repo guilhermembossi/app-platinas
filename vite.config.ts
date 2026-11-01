@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { marca } from './src/config/marca.ts';
@@ -6,6 +7,11 @@ import { marca } from './src/config/marca.ts';
 const BASE = process.env.BASE ?? '/app-platinas/';
 
 const variaveis = Object.entries(marca.cores).map(([k, v]) => `--${k}:${v}`).join(';');
+
+// Versão dos ícones (?v=...): muda sozinha quando o ícone muda em marca.ts. Sem isso o iPhone
+// reaproveita o ícone antigo que já baixou, mesmo depois de publicar o novo.
+const ICONE_V = createHash('sha256').update(JSON.stringify(marca.icone)).digest('hex').slice(0, 8);
+const icone = (arquivo: string) => `icones/${arquivo}?v=${ICONE_V}`;
 
 const manifest = () => JSON.stringify({
   name: marca.nome,
@@ -19,9 +25,9 @@ const manifest = () => JSON.stringify({
   background_color: marca.cores.fundo,
   theme_color: marca.cores.superficie,
   icons: [
-    { src: 'icones/icone-192.png', sizes: '192x192', type: 'image/png' },
-    { src: 'icones/icone-512.png', sizes: '512x512', type: 'image/png' },
-    { src: 'icones/icone-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    { src: icone('icone-192.png'), sizes: '192x192', type: 'image/png' },
+    { src: icone('icone-512.png'), sizes: '512x512', type: 'image/png' },
+    { src: icone('icone-maskable-512.png'), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
   ],
 }, null, 2);
 
@@ -35,6 +41,7 @@ function marcaNoApp(): Plugin {
         .replaceAll('%DESCRICAO%', marca.descricao)
         .replaceAll('%IDIOMA%', marca.idioma)
         .replaceAll('%COR_TOPO%', marca.cores.superficie)
+        .replaceAll('%ICONE_V%', ICONE_V)
         .replace('</head>', `<style>:root{${variaveis};color-scheme:dark}</style></head>`);
     },
     configureServer(server) {
@@ -51,5 +58,6 @@ function marcaNoApp(): Plugin {
 
 export default defineConfig({
   base: BASE,
+  define: { 'import.meta.env.VITE_ICONE_V': JSON.stringify(ICONE_V) },
   plugins: [react(), marcaNoApp()],
 });
