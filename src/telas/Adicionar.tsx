@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { adicionarJogo, buscarJogos, mensagemPsn, procurarGuia, type Guia, type JogoDaConta } from '../dados/psn';
 import BotaoVoltar from '../componentes/BotaoVoltar';
+import { useIdioma, type Textos } from '../i18n';
 import { ROTA_JOGO } from './Jogo';
 
 // Andamento do "Adicionar" (7.0 item 8). Cada passo só vira ✓ quando o servidor responde.
@@ -15,6 +16,7 @@ type Andamento = {
 
 // Buscar um jogo entre os títulos da conta PSN e adicionar, mostrando os passos.
 export default function Adicionar() {
+  const { t } = useIdioma();
   const [termo, setTermo] = useState('');
   const [buscando, setBuscando] = useState(false);
   const [resultados, setResultados] = useState<JogoDaConta[] | null>(null);
@@ -30,7 +32,7 @@ export default function Adicionar() {
     try {
       setResultados(await buscarJogos(termo.trim()));
     } catch (err) {
-      setErro(mensagemPsn(err));
+      setErro(mensagemPsn(err, t));
     } finally {
       setBuscando(false);
     }
@@ -43,7 +45,7 @@ export default function Adicionar() {
     try {
       adicionado = await adicionarJogo(jogo.np_communication_id);
     } catch (err) {
-      setErro(mensagemPsn(err));
+      setErro(mensagemPsn(err, t));
       setAndamento(null);
       return;
     }
@@ -63,23 +65,23 @@ export default function Adicionar() {
   return (
     <>
       <div className="cabecalho cabecalho-com-voltar">
-        <BotaoVoltar para="#/" rotulo="Voltar para Meus jogos" />
-        <h1>Adicionar jogo</h1>
+        <BotaoVoltar para="#/" rotulo={t.voltarMeusJogos} />
+        <h1>{t.tituloAdicionar}</h1>
       </div>
 
       <form className="busca" onSubmit={buscar}>
-        <input type="search" value={termo} onChange={(e) => setTermo(e.target.value)} placeholder="Nome do jogo"
-          aria-label="Nome do jogo" enterKeyHint="search" minLength={2} required autoFocus />
+        <input type="search" value={termo} onChange={(e) => setTermo(e.target.value)} placeholder={t.nomeDoJogo}
+          aria-label={t.nomeDoJogo} enterKeyHint="search" minLength={2} required autoFocus />
         <button className="botao-primario botao-pequeno" type="submit" disabled={buscando || ocupado}>
-          {buscando ? 'Buscando…' : 'Buscar'}
+          {buscando ? t.buscando : t.buscar}
         </button>
       </form>
-      <p className="fraco dica-busca">Só aparecem jogos que você já abriu no console (os que têm troféus na sua conta).</p>
+      <p className="fraco dica-busca">{t.dicaBusca}</p>
 
       {erro && <p className="mensagem erro" role="alert">{erro}</p>}
 
       {resultados !== null && !buscando && (resultados.length === 0 ? (
-        <div className="cartao vazio"><p>Nenhum jogo da sua conta com esse nome.</p></div>
+        <div className="cartao vazio"><p>{t.nenhumResultado}</p></div>
       ) : (
         <ul className="lista-jogos">
           {resultados.map((j) => {
@@ -93,15 +95,15 @@ export default function Adicionar() {
                     <span className="fraco jogo-detalhe">{j.plataforma} · {j.progresso_pct}%</span>
                   </div>
                   {meu ? null : j.ja_adicionado ? (
-                    <span className="fraco jogo-detalhe">Já adicionado</span>
+                    <span className="fraco jogo-detalhe">{t.jaAdicionado}</span>
                   ) : (
                     <button type="button" className="botao-primario botao-pequeno" onClick={() => adicionar(j)}
                       disabled={ocupado}>
-                      Adicionar
+                      {t.adicionar}
                     </button>
                   )}
                 </div>
-                {meu && <Passos andamento={meu} />}
+                {meu && <Passos andamento={meu} t={t} />}
               </li>
             );
           })}
@@ -111,15 +113,15 @@ export default function Adicionar() {
   );
 }
 
-function Passos({ andamento: a }: { andamento: Andamento }) {
+function Passos({ andamento: a, t }: { andamento: Andamento; t: Textos }) {
   const trofeus = a.passo === 'trofeus'
-    ? { estado: 'agora', texto: 'Importando troféus e progresso…' }
-    : { estado: 'feito', texto: `Troféus e progresso importados (${a.trofeus})` };
-  const guia = a.passo === 'trofeus' ? { estado: 'depois', texto: 'Guia' }
-    : a.passo === 'guia' ? { estado: 'agora', texto: 'Procurando o guia na PowerPyx…' }
-      : a.guia ? { estado: 'feito', texto: 'Guia encontrado na PowerPyx' }
-        : { estado: 'aviso', texto: a.erroGuia ? 'Não deu para procurar o guia agora' : 'Sem guia na PowerPyx (a busca fica na tela do jogo)' };
-  const pronto = a.passo === 'pronto' ? { estado: 'feito', texto: 'Pronto' } : { estado: 'depois', texto: 'Pronto' };
+    ? { estado: 'agora', texto: t.importando }
+    : { estado: 'feito', texto: t.importados(a.trofeus ?? 0) };
+  const guia = a.passo === 'trofeus' ? { estado: 'depois', texto: t.guia }
+    : a.passo === 'guia' ? { estado: 'agora', texto: t.procurandoGuia }
+      : a.guia ? { estado: 'feito', texto: t.guiaAchado }
+        : { estado: 'aviso', texto: a.erroGuia ? t.guiaErro : t.guiaNenhum };
+  const pronto = a.passo === 'pronto' ? { estado: 'feito', texto: t.pronto } : { estado: 'depois', texto: t.pronto };
 
   return (
     <div className="passos">
@@ -135,8 +137,8 @@ function Passos({ andamento: a }: { andamento: Andamento }) {
       </ol>
       {a.passo === 'pronto' && a.jogoId && (
         <div className="passos-acoes">
-          <a className="botao-primario botao-pequeno" href={`${ROTA_JOGO}${a.jogoId}`}>Abrir o jogo</a>
-          <a className="link" href="#/">Voltar para Meus jogos</a>
+          <a className="botao-primario botao-pequeno" href={`${ROTA_JOGO}${a.jogoId}`}>{t.abrirJogo}</a>
+          <a className="link" href="#/">{t.voltarMeusJogos}</a>
         </div>
       )}
     </div>

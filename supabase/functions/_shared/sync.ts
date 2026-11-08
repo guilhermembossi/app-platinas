@@ -40,16 +40,23 @@ export async function gravarJogo(
 ) {
   const npId = titulo.npCommunicationId;
   const opcoes = { npServiceName: titulo.npServiceName };
-  const [pt, en, meus, blocos] = await Promise.all([
+  const [pt, en, meus, blocos, blocosEn] = await Promise.all([
     getTitleTrophies(acesso, npId, 'all', { ...opcoes, headerOverrides: { 'Accept-Language': 'pt-BR' } }),
     getTitleTrophies(acesso, npId, 'all', { ...opcoes, headerOverrides: { 'Accept-Language': 'en-US' } }),
     getUserTrophiesEarnedForTitle(acesso, 'me', npId, 'all', opcoes),
     getTitleTrophyGroups(acesso, npId, { ...opcoes, headerOverrides: { 'Accept-Language': 'pt-BR' } }),
+    getTitleTrophyGroups(acesso, npId, { ...opcoes, headerOverrides: { 'Accept-Language': 'en-US' } }),
   ]);
   const ingles = new Map(en.trophies.map((t) => [t.trophyId, t]));
   const ganhos = new Map(meus.trophies.map((t) => [t.trophyId, t]));
   // Blocos da PSN (7.0 item 1): 'default' = jogo base, '001', '002'... = DLCs, na ordem da PSN.
-  const grupos = blocos.trophyGroups.map((g) => ({ id: g.trophyGroupId, nome: g.trophyGroupName }));
+  // nome_en (7.1.1): o nome do bloco na PSN em inglês, para o app em EN.
+  const blocosIngles = new Map(blocosEn.trophyGroups.map((g) => [g.trophyGroupId, g.trophyGroupName]));
+  const grupos = blocos.trophyGroups.map((g) => ({
+    id: g.trophyGroupId,
+    nome: g.trophyGroupName,
+    nome_en: blocosIngles.get(g.trophyGroupId) ?? g.trophyGroupName,
+  }));
   // A platina só existe no jogo base; platinado = ela foi conquistada (100% é o progresso da PSN).
   const platinado = pt.trophies.some((t) => t.trophyType === 'platinum' && ganhos.get(t.trophyId)?.earned);
   // "X de Y troféus" do card de Meus jogos (7.0 item 5).

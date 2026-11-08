@@ -366,3 +366,11 @@ details:not([open]) > .bloco-titulo { margin-bottom: 0; }
 
 .mensagem { margin: 0; padding: 0.75rem; border-radius: 10px; font-size: 0.9rem; border: 1px solid var(--borda); }
 .mensagem.erro { border-color: var(--erro); color: var(--erro); }
+
+/* Idioma (7.1.1): PT | EN na aba Resumo, no mesmo estilo dos filtros; o atual fica marcado. */
+.idioma { margin-top: 1rem; }
+.idioma-linha { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.idioma .secao-titulo { margin-bottom: 0.25rem; }
+.seletor-idioma { flex: none; display: flex; gap: 0.25rem; padding: 0.25rem; border: 1px solid var(--borda); border-radius: 12px; background: var(--fundo); }
+.seletor-idioma button { min-width: 52px; min-height: 44px; border: 0; border-radius: 9px; background: none; color: var(--textoFraco); font-weight: 700; cursor: pointer; }
+.seletor-idioma button[aria-pressed='true'] { background: var(--primaria); color: var(--sobrePrimaria); }

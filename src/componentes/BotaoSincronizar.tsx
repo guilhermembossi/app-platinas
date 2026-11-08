@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { mensagemPsn, sincronizarJogos } from '../dados/psn';
+import { useIdioma } from '../i18n';
 
 // Botão "Sincronizar" (tarefa 5.1): pede à PSN o progresso atual e recarrega a tela.
 // Sem `gameId`, sincroniza todos os jogos adicionados. Redondo, só com ícone (7.0 item 4):
 // o ícone gira enquanto sincroniza; o aviso de erro aparece logo abaixo.
 export default function BotaoSincronizar({ gameId, aoTerminar }: { gameId?: string; aoTerminar: () => void }) {
+  const { t } = useIdioma();
   const [sincronizando, setSincronizando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -13,9 +15,9 @@ export default function BotaoSincronizar({ gameId, aoTerminar }: { gameId?: stri
     setSincronizando(true);
     try {
       const { falharam } = await sincronizarJogos(gameId);
-      if (falharam > 0) setAviso(`${falharam} jogo${falharam > 1 ? 's' : ''} não sincronizou. Tente de novo.`);
+      if (falharam > 0) setAviso(t.naoSincronizou(falharam));
     } catch (err) {
-      setAviso(mensagemPsn(err));
+      setAviso(mensagemPsn(err, t));
     } finally {
       setSincronizando(false);
       aoTerminar(); // também no erro: o início confere de novo se o token venceu (5.3)
@@ -26,7 +28,7 @@ export default function BotaoSincronizar({ gameId, aoTerminar }: { gameId?: stri
     <>
       <button type="button" className={sincronizando ? 'botao-redondo girando' : 'botao-redondo'}
         onClick={sincronizar} disabled={sincronizando}
-        aria-label={sincronizando ? 'Sincronizando…' : gameId ? 'Sincronizar este jogo' : 'Sincronizar todos os jogos'}>
+        aria-label={sincronizando ? t.sincronizando : gameId ? t.sincronizarJogo : t.sincronizarTodos}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
           strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />

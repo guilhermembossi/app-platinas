@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { plataformaLegivel, quando, useJogos, type Jogo } from '../dados/jogos';
+import { plataformaLegivel, useJogos, type Jogo } from '../dados/jogos';
+import { quando, useIdioma } from '../i18n';
 import { supabase } from '../supabase';
 import { useTokenVencido } from '../dados/estadoPsn';
 import AvisoToken from '../componentes/AvisoToken';
@@ -11,6 +12,7 @@ export const ROTA_ADICIONAR = '#/adicionar';
 
 // Tela inicial: os jogos adicionados com ícone, % e barra, e a última sincronização de cada um.
 export default function Inicio({ sessao }: { sessao: Session }) {
+  const { t } = useIdioma();
   const { jogos, erro, recarregar, alterarFixado } = useJogos();
   const { vencido, conferir } = useTokenVencido();
   const [erroFixar, setErroFixar] = useState(false);
@@ -23,29 +25,29 @@ export default function Inicio({ sessao }: { sessao: Session }) {
   return (
     <>
       <div className="cabecalho">
-        <h1>Meus jogos</h1>
+        <h1>{t.meusJogos}</h1>
         <div className="cabecalho-acoes">
           {jogos && jogos.length > 0 && <BotaoSincronizar aoTerminar={() => { recarregar(); conferir(); }} />}
-          <a className="botao-primario botao-pequeno" href={ROTA_ADICIONAR}>+ Adicionar jogo</a>
+          <a className="botao-primario botao-pequeno" href={ROTA_ADICIONAR}>{t.adicionarJogo}</a>
         </div>
       </div>
       {vencido && <AvisoToken />}
 
       {erro ? (
         <div className="cartao vazio">
-          <p>Não deu para carregar seus jogos.</p>
-          <button type="button" className="link" onClick={recarregar}>Tentar de novo</button>
+          <p>{t.erroJogos}</p>
+          <button type="button" className="link" onClick={recarregar}>{t.tentarDeNovo}</button>
         </div>
       ) : jogos === null ? (
-        <p className="fraco" aria-busy="true">Carregando…</p>
+        <p className="fraco" aria-busy="true">{t.carregando}</p>
       ) : jogos.length === 0 ? (
         <div className="cartao vazio">
-          <p>Nenhum jogo ainda.</p>
-          <p className="fraco">Toque em "Adicionar jogo" e escolha um jogo da sua conta PSN.</p>
+          <p>{t.nenhumJogo}</p>
+          <p className="fraco">{t.dicaNenhumJogo}</p>
         </div>
       ) : (
         <>
-          {erroFixar && <p className="mensagem erro" role="alert">Não deu para fixar o jogo. Tente de novo.</p>}
+          {erroFixar && <p className="mensagem erro" role="alert">{t.erroFixar}</p>}
           <ul className="lista-jogos">
             {jogos.map((j) => <CartaoJogo key={j.id} jogo={j} aoTrocarFixado={() => trocarFixado(j)} />)}
           </ul>
@@ -54,7 +56,7 @@ export default function Inicio({ sessao }: { sessao: Session }) {
 
       <footer className="rodape">
         <span className="fraco">{sessao.user.email}</span>
-        <button type="button" className="link" onClick={() => supabase.auth.signOut()}>Sair</button>
+        <button type="button" className="link" onClick={() => supabase.auth.signOut()}>{t.sair}</button>
       </footer>
     </>
   );
@@ -63,11 +65,12 @@ export default function Inicio({ sessao }: { sessao: Session }) {
 // Platina (só jogo base) e 100% (todos os blocos) são coisas diferentes (7.0 item 1).
 // A estrela fica fora do link (botão dentro de link não é permitido) e fixa o jogo no topo (item 2).
 function CartaoJogo({ jogo, aoTrocarFixado }: { jogo: Jogo; aoTrocarFixado: () => void }) {
+  const { t } = useIdioma();
   const completo = jogo.progresso_pct === 100;
   return (
     <li className="cartao cartao-jogo">
       <button type="button" className={jogo.fixado ? 'estrela fixada' : 'estrela'} aria-pressed={jogo.fixado}
-        aria-label={jogo.fixado ? `Desafixar ${jogo.nome}` : `Fixar ${jogo.nome} no topo`} onClick={aoTrocarFixado}>
+        aria-label={jogo.fixado ? t.desafixar(jogo.nome) : t.fixar(jogo.nome)} onClick={aoTrocarFixado}>
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"
             fill={jogo.fixado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -84,18 +87,18 @@ function CartaoJogo({ jogo, aoTrocarFixado }: { jogo: Jogo; aoTrocarFixado: () =
           </div>
           {jogo.platinado && (
             <div className="etiquetas">
-              <span className="etiqueta platina">✓ Platina</span>
+              <span className="etiqueta platina">{t.seloPlatina}</span>
               {completo && <span className="etiqueta ok">✓ 100%</span>}
             </div>
           )}
           <div className="barra-progresso" role="progressbar" aria-valuenow={jogo.progresso_pct} aria-valuemin={0} aria-valuemax={100}
-            aria-label={`Progresso de ${jogo.nome}`}>
+            aria-label={t.progressoDe(jogo.nome)}>
             <div style={{ width: `${jogo.progresso_pct}%` }} />
           </div>
           <span className="jogo-detalhe">
-            {plataformaLegivel(jogo.plataforma)} · {jogo.trofeus_conquistados} de {jogo.trofeus_total} troféus
+            {plataformaLegivel(jogo.plataforma)} · {t.trofeusDe(jogo.trofeus_conquistados, jogo.trofeus_total)}
           </span>
-          {jogo.ultima_sync && <span className="fraco jogo-detalhe">sincronizado {quando(jogo.ultima_sync)}</span>}
+          {jogo.ultima_sync && <span className="fraco jogo-detalhe">{t.sincronizado(quando(jogo.ultima_sync, t))}</span>}
         </div>
       </a>
     </li>

@@ -3,7 +3,7 @@
 -- Cria dois usuários de teste (sem senha) e age como cada um, do mesmo jeito que a API faz
 -- (papel "authenticated" + o id do usuário no token). No fim levanta um erro de propósito:
 -- o resultado sai na mensagem e TUDO é desfeito (nenhum usuário ou dado de teste fica no banco).
--- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "29 OK, 0 FALHOU".
+-- Rodar no SQL do Supabase (MCP execute_sql ou SQL Editor). Esperado: "36 OK, 0 FALHOU".
 do $$
 declare
   u1 uuid := gen_random_uuid();  u2 uuid := gen_random_uuid();
@@ -50,6 +50,15 @@ begin
     ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 gravou em psn_profile';
   exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 grava em psn_profile: recusado'; end;
 
+  -- Idioma (7.1.1): o dono cria e lê a própria preferência, mas não apaga.
+  insert into platinas.preferencias (idioma) values ('en');
+  select count(*) from platinas.preferencias where user_id = u1 and idioma = 'en' into n;
+  if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 grava e lê o próprio idioma';
+  else ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 não gravou o próprio idioma'; end if;
+  begin delete from platinas.preferencias;
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 apagou preferencias';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 1 apaga preferencias: recusado'; end;
+
   -- Usuário 2 tenta ler, alterar e apagar os dados do 1 ----------------------------------
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', u2, 'role', 'authenticated')::text, true);
@@ -69,6 +78,17 @@ begin
     if n = 0 then ok := ok + 1; r := r || ('OK      usuário 2 apaga ' || tab || ': 0 linhas');
     else ruim := ruim + 1; r := r || ('FALHOU  usuário 2 apaga ' || tab || ': ' || n || ' linhas'); end if;
   end loop;
+
+  select count(*) from platinas.preferencias into n;
+  if n = 0 then ok := ok + 1; r := r || text 'OK      usuário 2 lê preferencias: 0 linhas';
+  else ruim := ruim + 1; r := r || text 'FALHOU  usuário 2 leu a preferencia do 1'; end if;
+  update platinas.preferencias set idioma = 'pt' where true;
+  get diagnostics n = row_count;
+  if n = 0 then ok := ok + 1; r := r || text 'OK      usuário 2 altera preferencias: 0 linhas';
+  else ruim := ruim + 1; r := r || text 'FALHOU  usuário 2 alterou a preferencia do 1'; end if;
+  begin insert into platinas.preferencias (user_id, idioma) values (u1, 'pt');
+    ruim := ruim + 1; r := r || text 'FALHOU  usuário 2 gravou idioma em nome do 1';
+  exception when insufficient_privilege then ok := ok + 1; r := r || text 'OK      usuário 2 grava idioma em nome do 1: recusado'; end;
 
   -- Usuário 2 tenta gravar em nome do 1 ou pendurar troféu no jogo do 1 -------------------
   begin insert into platinas.games (np_communication_id, nome, user_id) values ('NPWR00002_00', 'x', u1);
@@ -100,7 +120,7 @@ begin
   reset role;
   perform set_config('request.jwt.claims', '', true);
   set local role anon;
-  foreach tab in array array['games', 'trophies', 'psn_auth', 'sync_log', 'psn_profile'] loop
+  foreach tab in array array['games', 'trophies', 'psn_auth', 'sync_log', 'psn_profile', 'preferencias'] loop
     begin execute format('select count(*) from platinas.%I', tab) into n;
       ruim := ruim + 1; r := r || ('FALHOU  visitante leu ' || tab);
     exception when insufficient_privilege then ok := ok + 1; r := r || ('OK      visitante lê ' || tab || ': recusado'); end;
@@ -142,6 +162,10 @@ begin
   select count(*) from platinas.psn_profile where user_id = u1 into n;
   if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 lê o próprio psn_profile';
   else ruim := ruim + 1; r := r || text 'FALHOU  usuário 1 não leu o próprio psn_profile'; end if;
+
+  select count(*) from platinas.preferencias where idioma = 'en' into n;
+  if n = 1 then ok := ok + 1; r := r || text 'OK      usuário 1 continua com o próprio idioma';
+  else ruim := ruim + 1; r := r || text 'FALHOU  idioma do usuário 1 mudou'; end if;
 
   reset role;
   raise exception '%', E'RESULTADO (tudo desfeito, nada fica no banco)\n'

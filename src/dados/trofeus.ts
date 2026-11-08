@@ -9,6 +9,8 @@ export type Trofeu = {
   grupo_id: string;
   nome: string;
   descricao: string | null;
+  nome_en: string | null;     // nome e descrição da PSN em inglês (app em EN, 7.1.1)
+  descricao_en: string | null;
   tipo: TipoTrofeu;
   icone_url: string | null;
   oculto: boolean;
@@ -18,13 +20,15 @@ export type Trofeu = {
   raridade_pct: number | null;
 };
 
-// Raridade (7.0 item 10): faixas da PSN pelo % dos jogadores que têm o troféu. A classe dá a cor.
-export function raridade(pct: number | null): { nome: string; classe: string } | null {
+// Raridade (7.0 item 10): faixas da PSN pelo % dos jogadores que têm o troféu. A classe dá a cor
+// e o nome no idioma do app (t.raridades).
+export type Raridade = 'ultra-raro' | 'muito-raro' | 'raro' | 'comum';
+export function raridade(pct: number | null): Raridade | null {
   if (pct == null) return null;
-  if (pct < 5) return { nome: 'Ultra raro', classe: 'ultra-raro' };
-  if (pct < 15) return { nome: 'Muito raro', classe: 'muito-raro' };
-  if (pct < 50) return { nome: 'Raro', classe: 'raro' };
-  return { nome: 'Comum', classe: 'comum' };
+  if (pct < 5) return 'ultra-raro';
+  if (pct < 15) return 'muito-raro';
+  if (pct < 50) return 'raro';
+  return 'comum';
 }
 
 export type DetalheJogo = {
@@ -40,7 +44,8 @@ export type DetalheJogo = {
 };
 
 // Bloco de troféus da PSN (7.0 item 1): 'default' = jogo base; '001', '002'... = DLCs.
-export type Grupo = { id: string; nome: string };
+// nome_en (7.1.1) só existe depois da primeira sincronização com a versão nova.
+export type Grupo = { id: string; nome: string; nome_en?: string };
 export const GRUPO_BASE = 'default';
 
 export type Filtro = 'todos' | 'faltando' | 'missables';
@@ -74,7 +79,7 @@ export function useJogo(id: string) {
         .select('id, nome, plataforma, icone_url, progresso_pct, guia_url, ultima_sync, grupos, platinado')
         .eq('id', id).maybeSingle(),
       supabase.from('trophies')
-        .select('id, trophy_id, grupo_id, nome, descricao, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable, raridade_pct')
+        .select('id, trophy_id, grupo_id, nome, descricao, nome_en, descricao_en, tipo, icone_url, oculto, conquistado, conquistado_em, is_missable, raridade_pct')
         .eq('game_id', id).order('trophy_id'),
     ]).then(([g, t]) => {
       if (!ativo) return;

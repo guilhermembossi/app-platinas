@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
+import type { Textos } from '../i18n';
 
 export type JogoDaConta = {
   np_communication_id: string;
@@ -45,13 +46,5 @@ export async function sincronizarJogos(gameId?: string): Promise<{ atualizados: 
   return psnJogos(gameId ? { acao: 'sincronizar', game_id: gameId } : { acao: 'sincronizar' });
 }
 
-const MENSAGENS: Record<string, string> = {
-  token_expirado: 'O acesso à PSN venceu. O passo a passo para renovar está na tela inicial.',
-  nao_encontrado: 'Esse jogo não está mais na sua conta PSN.',
-  termo_curto: 'Digite pelo menos 2 letras.',
-  sem_login: 'Sua sessão terminou. Entre de novo.',
-  sem_internet: 'Sem internet. Conecte e tente de novo.',
-};
-
-export const mensagemPsn = (e: unknown) =>
-  MENSAGENS[(e as Error).message] ?? 'Algo deu errado com a PSN. Tente de novo.';
+// Mensagem pelo status da função, no idioma do app (7.1.1).
+export const mensagemPsn = (e: unknown, t: Textos) => t.errosPsn[(e as Error).message] ?? t.erroPsn;
